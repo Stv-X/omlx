@@ -42,7 +42,7 @@ import Security
 
 struct QuantizationScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = QuantizationScreenVM()
+    @State private var vm = QuantizationScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -772,7 +772,7 @@ private struct UploadStatusChip: View {
 // repo name entered. Body submission closes the sheet via uploadTarget=nil.
 private struct UploadModalView: View {
     let task: OQTaskDTO
-    @ObservedObject var vm: QuantizationScreenVM
+    @Bindable var vm: QuantizationScreenVM
     let client: OMLXClient
 
     @Environment(\.omlxTheme) private var theme

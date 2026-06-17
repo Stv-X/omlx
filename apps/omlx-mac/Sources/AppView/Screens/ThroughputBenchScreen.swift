@@ -39,7 +39,7 @@ struct ThroughputBenchScreen: View {
     @EnvironmentObject private var services: AppServices
     // VM is owned by AppServices so a running bench survives screen
     // unloads — see AppServices.throughputBench for the rationale.
-    @ObservedObject var vm: ThroughputBenchScreenVM
+    @Bindable var vm: ThroughputBenchScreenVM
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

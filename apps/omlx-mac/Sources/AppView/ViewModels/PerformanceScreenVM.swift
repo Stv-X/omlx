@@ -1,45 +1,46 @@
 import SwiftUI
 
 @MainActor
-final class PerformanceScreenVM: ObservableObject {
+@Observable
+final class PerformanceScreenVM {
     // Scheduler
-    @Published var maxConcurrentText: String = "8"
-    @Published var embeddingBatchSizeText: String = "32"
-    @Published var chunkedPrefill: Bool = false
+    var maxConcurrentText: String = "8"
+    var embeddingBatchSizeText: String = "32"
+    var chunkedPrefill: Bool = false
 
     // Memory & Lifecycle
-    @Published var prefillMemoryGuard: Bool = false
-    @Published var memoryGuardTier: String = "balanced"
-    @Published var memoryGuardCustomCeilingText: String = ""
-    @Published var idleTimeoutText: String = ""
-    @Published var modelFallback: Bool = false
+    var prefillMemoryGuard: Bool = false
+    var memoryGuardTier: String = "balanced"
+    var memoryGuardCustomCeilingText: String = ""
+    var idleTimeoutText: String = ""
+    var modelFallback: Bool = false
 
     // Cache
-    @Published var cacheEnabled: Bool = true
-    @Published var hotCacheOnly: Bool = false
-    @Published var hotCacheMaxSize: String = ""
-    @Published var ssdCacheDir: String = ""
-    @Published var ssdCacheMaxSize: String = ""
-    @Published var initialCacheBlocksText: String = ""
+    var cacheEnabled: Bool = true
+    var hotCacheOnly: Bool = false
+    var hotCacheMaxSize: String = ""
+    var ssdCacheDir: String = ""
+    var ssdCacheMaxSize: String = ""
+    var initialCacheBlocksText: String = ""
 
     // Loaded baselines (everything that drives Apply's enabled state)
-    @Published private(set) var loadedMaxConcurrent: Int = 8
-    @Published private(set) var loadedEmbeddingBatchSize: Int = 32
-    @Published private(set) var loadedChunkedPrefill: Bool = false
-    @Published private(set) var loadedPrefillMemoryGuard: Bool = false
-    @Published private(set) var loadedMemoryGuardTier: String = "balanced"
-    @Published private(set) var loadedMemoryGuardCustomCeilingGb: Double = 0
-    @Published private(set) var loadedIdleTimeoutSeconds: Int? = nil
-    @Published private(set) var loadedModelFallback: Bool = false
-    @Published private(set) var loadedCacheEnabled: Bool = true
-    @Published private(set) var loadedHotCacheOnly: Bool = false
-    @Published private(set) var loadedHotCacheMaxSize: String = ""
-    @Published private(set) var loadedSsdCacheDir: String = ""
-    @Published private(set) var loadedSsdCacheMaxSize: String = ""
-    @Published private(set) var loadedInitialCacheBlocks: Int? = nil
+    private(set) var loadedMaxConcurrent: Int = 8
+    private(set) var loadedEmbeddingBatchSize: Int = 32
+    private(set) var loadedChunkedPrefill: Bool = false
+    private(set) var loadedPrefillMemoryGuard: Bool = false
+    private(set) var loadedMemoryGuardTier: String = "balanced"
+    private(set) var loadedMemoryGuardCustomCeilingGb: Double = 0
+    private(set) var loadedIdleTimeoutSeconds: Int? = nil
+    private(set) var loadedModelFallback: Bool = false
+    private(set) var loadedCacheEnabled: Bool = true
+    private(set) var loadedHotCacheOnly: Bool = false
+    private(set) var loadedHotCacheMaxSize: String = ""
+    private(set) var loadedSsdCacheDir: String = ""
+    private(set) var loadedSsdCacheMaxSize: String = ""
+    private(set) var loadedInitialCacheBlocks: Int? = nil
 
-    @Published private(set) var isSaving: Bool = false
-    @Published var lastError: String?
+    private(set) var isSaving: Bool = false
+    var lastError: String?
 
     var hasPendingChanges: Bool {
         parsedMaxConcurrent != loadedMaxConcurrent

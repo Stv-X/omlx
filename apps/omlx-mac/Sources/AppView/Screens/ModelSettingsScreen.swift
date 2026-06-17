@@ -23,7 +23,7 @@ struct ModelSettingsScreen: View {
     let modelID: String
 
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = ModelSettingsScreenVM()
+    @State private var vm = ModelSettingsScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -142,7 +142,7 @@ private struct SectionPicker: View {
 // MARK: - Profiles tab
 
 private struct ProfilesTab: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     /// Source of `.preset` chips — the shipped JSON bundle, refreshable
     /// from omlx.ai via `POST /api/presets/refresh`. Replaces the legacy
     /// `vm.templates.filter { isBuiltin }` source after Phase 1 retired
@@ -150,7 +150,7 @@ private struct ProfilesTab: View {
     @ObservedObject var presetStore: PresetBundleStore
     let client: OMLXClient
     /// Optional binding to a Server-Defaults DTO surfaced read-only at
-    /// the bottom of the tab. Lives on the parent (a `@StateObject`-
+    /// the bottom of the tab. Lives on the parent (a `@State`-
     /// owned VM) so Phase 3's Server screen and this tab share state.
     var serverDefaults: GlobalSettingsDTO.SamplingDTO?
     /// Action handler for "Edit on Server →" link in the Server
@@ -465,7 +465,7 @@ private extension ActiveProfileState {
 // MARK: - Basic tab
 
 private struct BasicTab: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -591,7 +591,7 @@ private struct BasicTab: View {
 /// the `named` (clean) state — no banner clutter when there's nothing to
 /// do.
 private struct BasicEditBanner: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @State private var saveAsScope: ProfileScope = .global
@@ -648,7 +648,7 @@ private struct BasicEditBanner: View {
 // MARK: - Advanced tab
 
 private struct AdvancedTab: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @Environment(\.omlxTheme) private var theme
@@ -780,7 +780,7 @@ private struct AdvancedTab: View {
 // MARK: - Chat-template kwargs editor
 
 private struct ChatTemplateKwargsEditor: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @Environment(\.omlxTheme) private var theme
@@ -851,7 +851,7 @@ private struct ChatTemplateKwargsEditor: View {
 }
 
 private struct EntryEditor: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
     let entryID: UUID
 
@@ -975,7 +975,7 @@ private struct EntryEditor: View {
 // MARK: - Experimental section
 
 private struct ExperimentalSection: View {
-    @ObservedObject var vm: ModelSettingsScreenVM
+    @Bindable var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @Environment(\.omlxTheme) private var theme

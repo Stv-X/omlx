@@ -1,46 +1,51 @@
 import SwiftUI
 
 @MainActor
-final class QuantizationScreenVM: ObservableObject {
+@Observable
+final class QuantizationScreenVM {
     // Form state
-    @Published var selectedModelPath: String = ""
-    @Published var sensitivityModelPath: String = ""
-    @Published var oqLevel: Double = 4
-    @Published var textOnly: Bool = false
-    @Published var preserveMtp: Bool = false
-    @Published var dtype: String = "bfloat16"
-    @Published var advancedOpen: Bool = false
+    var selectedModelPath: String = ""
+    var sensitivityModelPath: String = ""
+    var oqLevel: Double = 4
+    var textOnly: Bool = false
+    var preserveMtp: Bool = false
+    var dtype: String = "bfloat16"
+    var advancedOpen: Bool = false
 
     // Server state
-    @Published private(set) var models: [OQModelInfo] = []
-    @Published private(set) var allModels: [OQModelInfo] = []
-    @Published private(set) var modelsLoaded: Bool = false
-    @Published private(set) var tasks: [OQTaskDTO] = []
-    @Published private(set) var estimate: OQEstimateResponse?
+    private(set) var models: [OQModelInfo] = []
+    private(set) var allModels: [OQModelInfo] = []
+    private(set) var modelsLoaded: Bool = false
+    private(set) var tasks: [OQTaskDTO] = []
+    private(set) var estimate: OQEstimateResponse?
 
     // Upload state — covers the sheet + the Upload Tasks section. The token
     // is hydrated from Keychain on `start()` and re-written after a
     // successful `validateHFUploadToken` round-trip. We hold it in plain
     // memory while the screen is mounted so the sheet's SecureField stays
     // bound; it never gets persisted anywhere except the Keychain.
-    @Published var uploadTasks: [HFUploadTaskDTO] = []
-    @Published var uploadTarget: OQTaskDTO?
-    @Published var uploadCandidateModels: [HFUploadModelInfo] = []
-    @Published var uploadToken: String = ""
-    @Published var uploadValidatedUsername: String?
-    @Published var uploadOrgs: [HFOrgInfo] = []
-    @Published var uploadNamespace: String = ""
-    @Published var isValidatingToken: Bool = false
-    @Published var lastUploadError: String?
+    var uploadTasks: [HFUploadTaskDTO] = []
+    var uploadTarget: OQTaskDTO?
+    var uploadCandidateModels: [HFUploadModelInfo] = []
+    var uploadToken: String = ""
+    var uploadValidatedUsername: String?
+    var uploadOrgs: [HFOrgInfo] = []
+    var uploadNamespace: String = ""
+    var isValidatingToken: Bool = false
+    var lastUploadError: String?
 
     // UI state
-    @Published private(set) var isStarting: Bool = false
-    @Published var lastError: String?
-    @Published var lastSuccess: String?
+    private(set) var isStarting: Bool = false
+    var lastError: String?
+    var lastSuccess: String?
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
+    @ObservationIgnored
     private var estimateDebounceTask: Task<Void, Never>?
+    @ObservationIgnored
     private var successClearTask: Task<Void, Never>?
 
     // Settings (no Codable persistence — form lives only while screen is open).

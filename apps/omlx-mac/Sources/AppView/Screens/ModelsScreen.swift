@@ -14,7 +14,7 @@ import SwiftUI
 
 struct ModelsScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = ModelsScreenVM()
+    @State private var vm = ModelsScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

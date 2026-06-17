@@ -12,7 +12,7 @@ import AppKit
 
 struct ServerScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = ServerScreenVM()
+    @State private var vm = ServerScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -198,7 +198,7 @@ struct ServerScreen: View {
 }
 
 private struct ModelDirectoriesEditor: View {
-    @ObservedObject var vm: ServerScreenVM
+    @Bindable var vm: ServerScreenVM
     @Environment(\.omlxTheme) private var theme
 
     var body: some View {
@@ -444,7 +444,7 @@ struct ServerHeroCard: View {
 /// them disabled with a "Per-model only" tag so the user knows where to
 /// look. Expander mirrors the design's "Show all fields…" affordance.
 private struct ServerDefaultProfileEditor: View {
-    @ObservedObject var vm: ServerScreenVM
+    @Bindable var vm: ServerScreenVM
 
     @State private var expanded: Bool = false
     @Environment(\.omlxTheme) private var theme
@@ -642,7 +642,7 @@ private struct APIEndpointsList: View {
 /// chevron so they don't crowd the main ServerScreen surface, but rendered
 /// inline (not in a popover) so power users can scroll-find them.
 private struct ServerAdvancedSection: View {
-    @ObservedObject var vm: ServerScreenVM
+    @Bindable var vm: ServerScreenVM
 
     @State private var expanded: Bool = false
     @Environment(\.omlxTheme) private var theme

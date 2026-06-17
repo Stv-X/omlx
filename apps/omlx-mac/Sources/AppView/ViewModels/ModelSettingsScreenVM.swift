@@ -1,7 +1,8 @@
 import SwiftUI
 
 @MainActor
-final class ModelSettingsScreenVM: ObservableObject {
+@Observable
+final class ModelSettingsScreenVM {
     enum Section: String, Hashable, CaseIterable, Sendable {
         case profiles, basic, advanced
 
@@ -203,106 +204,106 @@ final class ModelSettingsScreenVM: ObservableObject {
         "enable_thinking", "reasoning_effort", "preserve_thinking",
     ]
 
-    @Published var section: Section = .basic
+    var section: Section = .basic
 
-    @Published var model: ModelDTO?
+    var model: ModelDTO?
     /// Snapshot of every other model on the server, used to populate the
     /// SpecPrefill / DFlash draft-model dropdowns. Reloaded with `load()`.
-    @Published var allModels: [ModelDTO] = []
-    @Published var modelID: String = ""
-    @Published var lastError: String?
+    var allModels: [ModelDTO] = []
+    var modelID: String = ""
+    var lastError: String?
 
     // Basic
-    @Published var alias: String = ""
-    @Published var modelTypeOverride: String = ""
-    @Published var contextLength: String = ""
-    @Published var maxTokens: String = ""
-    @Published var temperature: String = ""
-    @Published var topP: String = ""
-    @Published var topK: String = ""
-    @Published var minP: String = ""
-    @Published var repetitionPenalty: String = ""
-    @Published var presencePenalty: String = ""
-    @Published var ttlSeconds: String = ""
+    var alias: String = ""
+    var modelTypeOverride: String = ""
+    var contextLength: String = ""
+    var maxTokens: String = ""
+    var temperature: String = ""
+    var topP: String = ""
+    var topK: String = ""
+    var minP: String = ""
+    var repetitionPenalty: String = ""
+    var presencePenalty: String = ""
+    var ttlSeconds: String = ""
 
     // Advanced
-    @Published var enableThinking: Bool = true
-    @Published var thinkingBudgetEnabled: Bool = false
-    @Published var thinkingBudgetTokens: String = "8192"
-    @Published var limitToolResults: Bool = false
+    var enableThinking: Bool = true
+    var thinkingBudgetEnabled: Bool = false
+    var thinkingBudgetTokens: String = "8192"
+    var limitToolResults: Bool = false
     /// Token cap when `limitToolResults` is on. Defaults to the HTML
     /// admin's seeded value so the first save after enabling sends a
     /// sensible number instead of zero (which the server interprets as
     /// "disabled").
-    @Published var toolResultLimitTokens: String = "4096"
-    @Published var forceSampling: Bool = false
-    @Published var isPinned: Bool = false
+    var toolResultLimitTokens: String = "4096"
+    var forceSampling: Bool = false
+    var isPinned: Bool = false
 
     // Security
-    @Published var trustRemoteCode: Bool = false
+    var trustRemoteCode: Bool = false
 
     // Reasoning parser (free-form override; empty = auto)
-    @Published var reasoningParser: String = ""
+    var reasoningParser: String = ""
 
     // Chat-template kwargs — entries are the editor's view of the
     // (chat_template_kwargs, forced_ct_kwargs) server pair.
-    @Published var chatTemplateEntries: [ChatTemplateKwargEntry] = []
+    var chatTemplateEntries: [ChatTemplateKwargEntry] = []
 
     // Experimental: TurboQuant KV
-    @Published var turboquantKvEnabled: Bool = false
-    @Published var turboquantKvBits: String = "4"
+    var turboquantKvEnabled: Bool = false
+    var turboquantKvBits: String = "4"
 
     // Experimental: IndexCache (DSA-only)
-    @Published var indexCacheEnabled: Bool = false
-    @Published var indexCacheFreq: String = "4"
+    var indexCacheEnabled: Bool = false
+    var indexCacheFreq: String = "4"
 
     // Experimental: SpecPrefill
-    @Published var specprefillEnabled: Bool = false
-    @Published var specprefillDraftModel: String = ""
-    @Published var specprefillKeepPct: String = "0.2"
-    @Published var specprefillThreshold: String = "8192"
+    var specprefillEnabled: Bool = false
+    var specprefillDraftModel: String = ""
+    var specprefillKeepPct: String = "0.2"
+    var specprefillThreshold: String = "8192"
 
     // Experimental: DFlash
-    @Published var dflashEnabled: Bool = false
-    @Published var dflashDraftModel: String = ""
-    @Published var dflashDraftQuantEnabled: Bool = false
-    @Published var dflashDraftQuantWeightBits: String = "4"
-    @Published var dflashDraftQuantActivationBits: String = ""
-    @Published var dflashDraftQuantGroupSize: String = ""
-    @Published var dflashMaxCtx: String = ""
-    @Published var dflashVerifyMode: String = ""
-    @Published var dflashDraftWindowSize: String = ""
-    @Published var dflashDraftSinkSize: String = ""
-    @Published var dflashInMemoryCache: Bool = false
-    @Published var dflashInMemoryCacheGib: String = "8"
-    @Published var dflashInMemoryCacheMaxEntries: String = "4"
-    @Published var dflashSsdCache: Bool = false
-    @Published var dflashSsdCacheGib: String = "20"
+    var dflashEnabled: Bool = false
+    var dflashDraftModel: String = ""
+    var dflashDraftQuantEnabled: Bool = false
+    var dflashDraftQuantWeightBits: String = "4"
+    var dflashDraftQuantActivationBits: String = ""
+    var dflashDraftQuantGroupSize: String = ""
+    var dflashMaxCtx: String = ""
+    var dflashVerifyMode: String = ""
+    var dflashDraftWindowSize: String = ""
+    var dflashDraftSinkSize: String = ""
+    var dflashInMemoryCache: Bool = false
+    var dflashInMemoryCacheGib: String = "8"
+    var dflashInMemoryCacheMaxEntries: String = "4"
+    var dflashSsdCache: Bool = false
+    var dflashSsdCacheGib: String = "20"
 
     // Experimental: native MTP
-    @Published var mtpEnabled: Bool = false
+    var mtpEnabled: Bool = false
 
     // Experimental: VLM MTP (assistant-drafter speculative decoding for VLMs).
     // Block size is held as a string for the editor; empty = mlx-vlm default.
-    @Published var vlmMtpEnabled: Bool = false
-    @Published var vlmMtpDraftModel: String = ""
-    @Published var vlmMtpDraftBlockSize: String = ""
+    var vlmMtpEnabled: Bool = false
+    var vlmMtpDraftModel: String = ""
+    var vlmMtpDraftBlockSize: String = ""
 
     // Profiles
-    @Published var profiles: [ProfileDTO] = []
-    @Published var templates: [ProfileDTO] = []
-    @Published var activeProfileName: String?
+    var profiles: [ProfileDTO] = []
+    var templates: [ProfileDTO] = []
+    var activeProfileName: String?
     /// Server's `GlobalSettings.sampling` snapshot, loaded alongside the
     /// per-model settings so the Profiles tab's "Server Defaults" card
     /// can render without a second round-trip.
-    @Published var serverDefaultSampling: GlobalSettingsDTO.SamplingDTO?
+    var serverDefaultSampling: GlobalSettingsDTO.SamplingDTO?
     /// Display scope for the active profile (derived from `source_template`).
-    @Published var activeProfileScope: ProfileScope = .model
+    var activeProfileScope: ProfileScope = .model
     /// True when one or more profile-eligible fields have been edited
     /// since the last load / apply / save. Flips the screen into the
     /// "Working profile" state. Per-model fields (alias / modelType /
     /// ttl / isPinned / trustRemoteCode) auto-save and never set this.
-    @Published var profileDirty: Bool = false
+    var profileDirty: Bool = false
 
     /// State machine the banner and ProfileDetailCard render against.
     /// Cheap to recompute — pure function of (profileDirty, activeProfileScope,

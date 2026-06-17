@@ -7,7 +7,7 @@ import AppKit
 
 struct LogsScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = LogsScreenVM()
+    @State private var vm = LogsScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

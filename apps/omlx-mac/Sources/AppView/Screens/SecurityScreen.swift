@@ -19,7 +19,7 @@ import AppKit
 
 struct SecurityScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = SecurityScreenVM()
+    @State private var vm = SecurityScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -42,7 +42,7 @@ struct SecurityScreen: View {
 // MARK: - API key section
 
 private struct APIKeySection: View {
-    @ObservedObject var vm: SecurityScreenVM
+    @Bindable var vm: SecurityScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -62,7 +62,7 @@ private struct APIKeySection: View {
 }
 
 private struct APIKeyEditorRow: View {
-    @ObservedObject var vm: SecurityScreenVM
+    @Bindable var vm: SecurityScreenVM
     let client: OMLXClient
 
     @State private var draft: String = ""
@@ -198,7 +198,7 @@ private struct APIKeyEditorRow: View {
 // MARK: - Authentication
 
 private struct AuthenticationSection: View {
-    @ObservedObject var vm: SecurityScreenVM
+    @Bindable var vm: SecurityScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -228,7 +228,7 @@ private struct AuthenticationSection: View {
 // MARK: - Sub keys
 
 private struct SubKeysSection: View {
-    @ObservedObject var vm: SecurityScreenVM
+    @Bindable var vm: SecurityScreenVM
     let client: OMLXClient
 
     @State private var newName: String = ""

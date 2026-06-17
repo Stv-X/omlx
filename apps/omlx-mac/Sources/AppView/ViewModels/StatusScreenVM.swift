@@ -1,17 +1,20 @@
 import SwiftUI
 
 @MainActor
-final class StatusScreenVM: ObservableObject {
-    @Published var scope: String = "session"
-    @Published var stats: StatsDTO?
-    @Published var lastError: String?
+@Observable
+final class StatusScreenVM {
+    var scope: String = "session"
+    var stats: StatsDTO?
+    var lastError: String?
     /// Loaded once on appear from `scheduler.max_concurrent_requests`.
     /// 8 is the server's default — used as the divisor before settings load
     /// so the % column doesn't read 0/0 on first paint.
-    @Published var maxConcurrent: Int = 8
-    @Published var metrics = SystemMetricsPoller()
+    var maxConcurrent: Int = 8
+    var metrics = SystemMetricsPoller()
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
 
     var systemSubtitle: String {

@@ -16,7 +16,7 @@ import SwiftUI
 
 struct IntegrationsScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = IntegrationsScreenVM()
+    @State private var vm = IntegrationsScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -40,7 +40,7 @@ struct IntegrationsScreen: View {
 // MARK: - Claude Code
 
 private struct ClaudeCodeSection: View {
-    @ObservedObject var vm: IntegrationsScreenVM
+    @Bindable var vm: IntegrationsScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -167,7 +167,7 @@ private struct ClaudeCodeSection: View {
 /// env-var recipe that points the real `claude` binary at the local server.
 /// Mirrors `claudeCodeCommand` in `omlx/admin/static/js/dashboard.js`.
 private struct ClaudeSetupCommandSection: View {
-    @ObservedObject var vm: IntegrationsScreenVM
+    @Bindable var vm: IntegrationsScreenVM
     @State private var showAdvanced = false
     @Environment(\.omlxTheme) private var theme
 
@@ -273,7 +273,7 @@ private struct CopyButton: View {
 // MARK: - Other integrations
 
 private struct OtherIntegrationsSection: View {
-    @ObservedObject var vm: IntegrationsScreenVM
+    @Bindable var vm: IntegrationsScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -451,7 +451,7 @@ private struct IntegrationRow: View {
 /// because it's a shared resource — putting it under any one integration
 /// would mislead.
 private struct MCPSection: View {
-    @ObservedObject var vm: IntegrationsScreenVM
+    @Bindable var vm: IntegrationsScreenVM
     let client: OMLXClient
 
     var body: some View {

@@ -1,12 +1,13 @@
 import SwiftUI
 
 @MainActor
-final class SecurityScreenVM: ObservableObject {
-    @Published var apiKeySet: Bool = false
-    @Published var apiKey: String?
-    @Published var skipApiKeyVerification: Bool = false
-    @Published var subKeys: [SubKeyDTO] = []
-    @Published var lastError: String?
+@Observable
+final class SecurityScreenVM {
+    var apiKeySet: Bool = false
+    var apiKey: String?
+    var skipApiKeyVerification: Bool = false
+    var subKeys: [SubKeyDTO] = []
+    var lastError: String?
 
     func bind<T: Equatable>(
         _ binding: Binding<T>,

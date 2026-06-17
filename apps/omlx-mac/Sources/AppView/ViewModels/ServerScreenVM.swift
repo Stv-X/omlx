@@ -1,37 +1,38 @@
 import SwiftUI
 
 @MainActor
-final class ServerScreenVM: ObservableObject {
-    @Published var host: String = "127.0.0.1"
-    @Published var portText: String = "8000"
-    @Published var logLevel: String = "info"
-    @Published var autoStartOnLaunch: Bool = true
+@Observable
+final class ServerScreenVM {
+    var host: String = "127.0.0.1"
+    var portText: String = "8000"
+    var logLevel: String = "info"
+    var autoStartOnLaunch: Bool = true
 
     // Phase 4 — Advanced disclosure.
-    @Published var sseKeepaliveMode: String = "chunk"
+    var sseKeepaliveMode: String = "chunk"
     /// Comma-separated text shown in the input. Parsed to `[String]` on save
     /// so the user can edit incrementally without intermediate trips to the
     /// server. Empty string clears all aliases.
-    @Published var serverAliasesText: String = ""
-    @Published var basePathText: String = AppConfig.defaultBasePath()
-    @Published var modelDirTexts: [String] = [""]
-    @Published var hfCacheEnabled: Bool = true
-    @Published var lastError: String?
-    @Published private(set) var isMovingBasePath: Bool = false
+    var serverAliasesText: String = ""
+    var basePathText: String = AppConfig.defaultBasePath()
+    var modelDirTexts: [String] = [""]
+    var hfCacheEnabled: Bool = true
+    var lastError: String?
+    private(set) var isMovingBasePath: Bool = false
 
     // Server default profile (GlobalSettings.sampling). Backed by 6
     // server-side fields; the other design rows render disabled.
-    @Published var samplingContextText: String = "32768"
-    @Published var samplingMaxTokensText: String = "32768"
-    @Published var samplingTemperatureText: String = "1.0"
-    @Published var samplingTopPText: String = "0.95"
-    @Published var samplingTopKText: String = "0"
-    @Published var samplingRepetitionPenaltyText: String = "1.0"
+    var samplingContextText: String = "32768"
+    var samplingMaxTokensText: String = "32768"
+    var samplingTemperatureText: String = "1.0"
+    var samplingTopPText: String = "0.95"
+    var samplingTopKText: String = "0"
+    var samplingRepetitionPenaltyText: String = "1.0"
 
     /// Last applied (effective) values used to build endpoint URLs. Distinct
     /// from `host`/`portText` so the URLs don't flicker mid-edit.
-    @Published var effectiveHost: String = "127.0.0.1"
-    @Published var effectivePort: Int = 8000
+    var effectiveHost: String = "127.0.0.1"
+    var effectivePort: Int = 8000
     var appliedBindAddress: String = "127.0.0.1"
 
     /// Apply-button baselines: snapshots of each Apply-managed draft taken
@@ -52,7 +53,9 @@ final class ServerScreenVM: ObservableObject {
     private var baselineModelDirs: [String] = []
     private var baselineHfCacheEnabled: Bool = true
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var hasLoaded = false
 
     func load(client: OMLXClient) async {

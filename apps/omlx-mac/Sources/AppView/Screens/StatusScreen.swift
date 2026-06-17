@@ -12,7 +12,7 @@ import SwiftUI
 
 struct StatusScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = StatusScreenVM()
+    @State private var vm = StatusScreenVM()
 
     @State private var showingClearStatsConfirm = false
     @State private var showingClearSsdCacheConfirm = false

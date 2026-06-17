@@ -1,21 +1,22 @@
 import SwiftUI
 
 @MainActor
-final class ThroughputBenchScreenVM: ObservableObject {
+@Observable
+final class ThroughputBenchScreenVM {
     // Form state — defaults mirror the HTML admin panel's pre-ticked options.
-    @Published var selectedModelId: String = ""
-    @Published var promptLengths: Set<Int> = [4096, 16384]
-    @Published var genLength: String = "128"
-    @Published var batchSizes: Set<Int> = [2, 4]
-    @Published var exportOpen: Bool = false
+    var selectedModelId: String = ""
+    var promptLengths: Set<Int> = [4096, 16384]
+    var genLength: String = "128"
+    var batchSizes: Set<Int> = [2, 4]
+    var exportOpen: Bool = false
 
     // Server state
-    @Published private(set) var models: [ModelDTO] = []
-    @Published private(set) var device: DeviceInfoDTO?
-    @Published private(set) var running: Bool = false
-    @Published private(set) var singleResults: [BenchResultDTO] = []
-    @Published private(set) var batchResults: [BenchResultDTO] = []
-    @Published private(set) var currentBenchId: String?
+    private(set) var models: [ModelDTO] = []
+    private(set) var device: DeviceInfoDTO?
+    private(set) var running: Bool = false
+    private(set) var singleResults: [BenchResultDTO] = []
+    private(set) var batchResults: [BenchResultDTO] = []
+    private(set) var currentBenchId: String?
     /// Server-side upload-to-leaderboard state, populated after the
     /// bench completes. Phases: "idle" (not yet started, or no upload
     /// because of experimental features detected later in the run) →
@@ -23,15 +24,18 @@ final class ThroughputBenchScreenVM: ObservableObject {
     /// past `status=completed` until this reaches a terminal phase so
     /// the user sees the leaderboard URL light up without manually
     /// refreshing.
-    @Published private(set) var uploadState: BenchUploadStateDTO?
-    @Published var lastError: String?
+    private(set) var uploadState: BenchUploadStateDTO?
+    var lastError: String?
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
     /// Counts poll iterations spent waiting for the upload phase to
     /// terminate after the bench itself completes. Reset on each new
     /// run; capped at 120 (i.e. 2 min at 1 Hz) so a wedged upload
     /// doesn't hold the poll loop hostage forever.
+    @ObservationIgnored
     private var postCompleteTicks: Int = 0
 
     // MARK: Derived
@@ -116,7 +120,7 @@ final class ThroughputBenchScreenVM: ObservableObject {
     /// model + device lists (cheap, ~ms) but never touches the
     /// running-bench state, results table, or poll task. If the user
     /// navigated away during a run, the same poll task is still alive
-    /// updating these `@Published` properties — coming back just
+    /// updating these observable properties — coming back just
     /// re-subscribes via SwiftUI's diffing.
     func start(client: OMLXClient) async {
         self.client = client

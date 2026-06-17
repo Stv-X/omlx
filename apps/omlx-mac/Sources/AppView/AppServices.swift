@@ -38,7 +38,7 @@ final class AppServices: NSObject, ObservableObject {
     let presetBundle = PresetBundleStore()
 
     /// Long-lived view models for the Bench screens. Owned here (not by
-    /// the screen's `@StateObject`) so a running benchmark survives
+    /// screen-local state) so a running benchmark survives
     /// leaving the screen — the server keeps producing results while
     /// we're off-screen and the poll task continues updating these VMs,
     /// so coming back shows the in-flight state instead of an empty

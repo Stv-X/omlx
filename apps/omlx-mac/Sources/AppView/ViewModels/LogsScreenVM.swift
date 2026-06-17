@@ -1,17 +1,20 @@
 import SwiftUI
 
 @MainActor
-final class LogsScreenVM: ObservableObject {
-    @Published var lines: Int = 100
-    @Published var selectedFile: String = ""
-    @Published var logText: String = ""
-    @Published var availableFiles: [String] = []
-    @Published var lastError: String?
-    @Published private(set) var isLoading: Bool = false
-    @Published private(set) var totalLines: Int = 0
-    @Published private(set) var refreshKey: Int = 0
+@Observable
+final class LogsScreenVM {
+    var lines: Int = 100
+    var selectedFile: String = ""
+    var logText: String = ""
+    var availableFiles: [String] = []
+    var lastError: String?
+    private(set) var isLoading: Bool = false
+    private(set) var totalLines: Int = 0
+    private(set) var refreshKey: Int = 0
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
 
     var subtitle: String {

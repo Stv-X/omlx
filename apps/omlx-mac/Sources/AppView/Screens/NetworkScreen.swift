@@ -18,7 +18,7 @@ import SwiftUI
 
 struct NetworkScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = NetworkScreenVM()
+    @State private var vm = NetworkScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -47,7 +47,7 @@ struct NetworkScreen: View {
 // MARK: - Proxies
 
 private struct ProxiesSection: View {
-    @ObservedObject var vm: NetworkScreenVM
+    @Bindable var vm: NetworkScreenVM
 
     var body: some View {
         SectionHeader(
@@ -103,7 +103,7 @@ private struct ProxiesSection: View {
 // MARK: - TLS
 
 private struct TLSSection: View {
-    @ObservedObject var vm: NetworkScreenVM
+    @Bindable var vm: NetworkScreenVM
 
     var body: some View {
         SectionHeader(

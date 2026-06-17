@@ -30,7 +30,7 @@ enum DownloadSource: String, CaseIterable, Hashable, Sendable {
 
 struct DownloadsScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = DownloadsScreenVM()
+    @State private var vm = DownloadsScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

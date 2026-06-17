@@ -19,7 +19,7 @@ import SwiftUI
 
 struct PerformanceScreen: View {
     @EnvironmentObject private var services: AppServices
-    @StateObject private var vm = PerformanceScreenVM()
+    @State private var vm = PerformanceScreenVM()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -55,7 +55,7 @@ struct PerformanceScreen: View {
 // MARK: - Scheduler
 
 private struct SchedulerSection: View {
-    @ObservedObject var vm: PerformanceScreenVM
+    @Bindable var vm: PerformanceScreenVM
 
     var body: some View {
         SectionHeader(
@@ -107,7 +107,7 @@ private struct SchedulerSection: View {
 // MARK: - Memory & Lifecycle
 
 private struct MemoryLifecycleSection: View {
-    @ObservedObject var vm: PerformanceScreenVM
+    @Bindable var vm: PerformanceScreenVM
 
     var body: some View {
         SectionHeader(
@@ -218,7 +218,7 @@ private struct MemoryLifecycleSection: View {
 // MARK: - Cache
 
 private struct CacheSection: View {
-    @ObservedObject var vm: PerformanceScreenVM
+    @Bindable var vm: PerformanceScreenVM
 
     var body: some View {
         SectionHeader(

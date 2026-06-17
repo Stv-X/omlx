@@ -1,24 +1,27 @@
 import SwiftUI
 
 @MainActor
-final class AccuracyBenchScreenVM: ObservableObject {
+@Observable
+final class AccuracyBenchScreenVM {
     // Form state
-    @Published var selectedModelId: String = ""
-    @Published var selectedBenchmarks: Set<String> = []
-    @Published var sampleSizes: [String: Int] = [:]
-    @Published var batchSize: Int = 4
-    @Published var enableThinking: Bool = false
+    var selectedModelId: String = ""
+    var selectedBenchmarks: Set<String> = []
+    var sampleSizes: [String: Int] = [:]
+    var batchSize: Int = 4
+    var enableThinking: Bool = false
 
     // Server state
-    @Published private(set) var models: [ModelDTO] = []
-    @Published private(set) var status: AccuracyQueueStatus?
-    @Published private(set) var results: [AccuracyResultDTO] = []
+    private(set) var models: [ModelDTO] = []
+    private(set) var status: AccuracyQueueStatus?
+    private(set) var results: [AccuracyResultDTO] = []
 
     // UI state
-    @Published private(set) var isAdding: Bool = false
-    @Published var lastError: String?
+    private(set) var isAdding: Bool = false
+    var lastError: String?
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
 
     var canSubmit: Bool {

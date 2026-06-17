@@ -1,7 +1,8 @@
 import SwiftUI
 
 @MainActor
-final class IntegrationsScreenVM: ObservableObject {
+@Observable
+final class IntegrationsScreenVM {
     enum Field: Sendable {
         case claudeMode, opusModel, sonnetModel, haikuModel, contextScaling, targetContextSize
         case codexModel, opencodeModel, openclawModel, piModel, openclawToolsProfile
@@ -10,49 +11,49 @@ final class IntegrationsScreenVM: ObservableObject {
     }
 
     // Claude Code
-    @Published var claudeMode: String = "cloud"
-    @Published var opusModel: String = ""
-    @Published var sonnetModel: String = ""
-    @Published var haikuModel: String = ""
-    @Published var contextScaling: Bool = false
+    var claudeMode: String = "cloud"
+    var opusModel: String = ""
+    var sonnetModel: String = ""
+    var haikuModel: String = ""
+    var contextScaling: Bool = false
     /// Free-text editor backing for `claude_code.target_context_size`. The
     /// server stores an `int`; we keep the screen field as a string so the
     /// user can type/clear without intermediate parse errors and we validate
     /// on save.
-    @Published var targetContextSizeText: String = "200000"
+    var targetContextSizeText: String = "200000"
     /// Last value persisted to the server. Drives the per-section Apply
     /// button under Target Context Size — diverges from
     /// `targetContextSizeText` whenever the user has unsaved edits,
     /// converges on a successful save. Mirrors `mcpConfigLoaded` below.
-    @Published private(set) var targetContextSizeLoaded: String = "200000"
+    private(set) var targetContextSizeLoaded: String = "200000"
 
     // Other integrations
-    @Published var codexModel: String = ""
-    @Published var opencodeModel: String = ""
-    @Published var openclawModel: String = ""
-    @Published var piModel: String = ""
-    @Published var openclawToolsProfile: String = "coding"
-    @Published var hermesModel: String = ""
-    @Published var copilotModel: String = ""
+    var codexModel: String = ""
+    var opencodeModel: String = ""
+    var openclawModel: String = ""
+    var piModel: String = ""
+    var openclawToolsProfile: String = "coding"
+    var hermesModel: String = ""
+    var copilotModel: String = ""
 
     // MCP
-    @Published var mcpConfigPath: String = ""
+    var mcpConfigPath: String = ""
     /// Last value persisted to the server. Drives the Apply button's
     /// enabled state — diverges from `mcpConfigPath` whenever the user
     /// has unsaved edits, converges on a successful save.
-    @Published private(set) var mcpConfigLoaded: String = ""
+    private(set) var mcpConfigLoaded: String = ""
 
-    @Published private(set) var availableModels: [String] = []
-    @Published var lastError: String?
+    private(set) var availableModels: [String] = []
+    var lastError: String?
 
     // Server-resolved fields used by the command builders. Populated from
     // /admin/api/stats so the shell strings reflect whatever host/port/key
     // the running server actually advertises (instead of the local config,
     // which can drift after a hot-reload).
-    @Published private(set) var serverHost: String = "127.0.0.1"
-    @Published private(set) var serverPort: Int = 8000
-    @Published private(set) var serverApiKey: String = ""
-    @Published private(set) var cliPrefix: String = "omlx"
+    private(set) var serverHost: String = "127.0.0.1"
+    private(set) var serverPort: Int = 8000
+    private(set) var serverApiKey: String = ""
+    private(set) var cliPrefix: String = "omlx"
 
     /// Popup options: a leading "Select model…" placeholder + every model id.
     var modelOptions: [(String, String)] {

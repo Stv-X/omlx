@@ -1,21 +1,22 @@
 import SwiftUI
 
 @MainActor
-final class NetworkScreenVM: ObservableObject {
+@Observable
+final class NetworkScreenVM {
     // Editable drafts
-    @Published var httpProxy: String = ""
-    @Published var httpsProxy: String = ""
-    @Published var noProxy: String = ""
-    @Published var caBundle: String = ""
+    var httpProxy: String = ""
+    var httpsProxy: String = ""
+    var noProxy: String = ""
+    var caBundle: String = ""
 
     // Last-loaded values. Drives the Apply button's enabled state.
-    @Published private(set) var loadedHttpProxy: String = ""
-    @Published private(set) var loadedHttpsProxy: String = ""
-    @Published private(set) var loadedNoProxy: String = ""
-    @Published private(set) var loadedCaBundle: String = ""
+    private(set) var loadedHttpProxy: String = ""
+    private(set) var loadedHttpsProxy: String = ""
+    private(set) var loadedNoProxy: String = ""
+    private(set) var loadedCaBundle: String = ""
 
-    @Published private(set) var isSaving: Bool = false
-    @Published var lastError: String?
+    private(set) var isSaving: Bool = false
+    var lastError: String?
 
     /// Trimmed draft != loaded for at least one field. Whitespace-only edits
     /// don't count as changes.

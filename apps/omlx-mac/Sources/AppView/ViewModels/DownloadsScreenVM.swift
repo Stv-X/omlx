@@ -1,76 +1,81 @@
 import SwiftUI
 
 @MainActor
-final class DownloadsScreenVM: ObservableObject {
+@Observable
+final class DownloadsScreenVM {
     // MARK: - Active source
 
     /// Currently selected download source. Drives which form, task list,
     /// and recommended set the view shows. Switching the source kicks a
     /// fresh load of that source's tasks + recommended on first activation.
-    @Published var source: DownloadSource = .hf {
+    var source: DownloadSource = .hf {
         didSet { sourceDidChange() }
     }
 
     /// `true` when the server reports the modelscope SDK is importable. The
     /// switcher disables the MS option when false so we never start a flow
     /// that will only ever 503.
-    @Published private(set) var msAvailable: Bool = false
+    private(set) var msAvailable: Bool = false
 
     // MARK: - HF state (pre-existing)
 
-    @Published var repoText: String = ""
-    @Published private(set) var tasks: [HFTaskDTO] = []
-    @Published private(set) var recommended: [HFModelInfo] = []
+    var repoText: String = ""
+    private(set) var tasks: [HFTaskDTO] = []
+    private(set) var recommended: [HFModelInfo] = []
 
     /// Configured HF mirror endpoint. Empty when using the HF default
     /// (huggingface.co). Loaded once on screen start, kept in sync with
     /// PATCH /admin/api/global-settings (`hf_endpoint`).
-    @Published private(set) var mirrorEndpoint: String = ""
-    @Published var isEditingMirror: Bool = false
-    @Published var mirrorDraft: String = ""
-    @Published private(set) var mirrorBusy: Bool = false
+    private(set) var mirrorEndpoint: String = ""
+    var isEditingMirror: Bool = false
+    var mirrorDraft: String = ""
+    private(set) var mirrorBusy: Bool = false
 
     /// Auto-complete suggestions for the manual repo input. Cleared when
     /// the input is empty, exactly matches a chosen repo, or the user
     /// dismisses the dropdown with Esc.
-    @Published private(set) var searchResults: [HFModelInfo] = []
-    @Published private(set) var searchLoading: Bool = false
-    @Published var searchDismissed: Bool = false
+    private(set) var searchResults: [HFModelInfo] = []
+    private(set) var searchLoading: Bool = false
+    var searchDismissed: Bool = false
+    @ObservationIgnored
     private var searchTask: Task<Void, Never>?
+    @ObservationIgnored
     private var lastSearchQuery: String = ""
 
     // MARK: - MS state (Phase 2)
 
-    @Published var msRepoText: String = ""
-    @Published private(set) var msTasks: [MSTaskDTO] = []
-    @Published private(set) var msRecommended: [MSModelInfo] = []
+    var msRepoText: String = ""
+    private(set) var msTasks: [MSTaskDTO] = []
+    private(set) var msRecommended: [MSModelInfo] = []
 
     /// Configured MS mirror endpoint. Empty = ModelScope default
     /// (modelscope.cn). Kept in sync with PATCH /admin/api/global-settings
     /// (`ms_endpoint`).
-    @Published private(set) var msMirrorEndpoint: String = ""
-    @Published var isEditingMsMirror: Bool = false
-    @Published var msMirrorDraft: String = ""
-    @Published private(set) var msMirrorBusy: Bool = false
+    private(set) var msMirrorEndpoint: String = ""
+    var isEditingMsMirror: Bool = false
+    var msMirrorDraft: String = ""
+    private(set) var msMirrorBusy: Bool = false
 
-    @Published private(set) var msSearchResults: [MSModelInfo] = []
-    @Published private(set) var msSearchLoading: Bool = false
-    @Published var msSearchDismissed: Bool = false
+    private(set) var msSearchResults: [MSModelInfo] = []
+    private(set) var msSearchLoading: Bool = false
+    var msSearchDismissed: Bool = false
+    @ObservationIgnored
     private var msSearchTask: Task<Void, Never>?
+    @ObservationIgnored
     private var lastMsSearchQuery: String = ""
 
     // MARK: - Cross-source
 
-    @Published private(set) var isStarting: Bool = false
-    @Published private(set) var recommendedLoading: Bool = false
-    @Published var recommendedSort: SuggestedSort = .downloads
-    @Published var lastError: String?
+    private(set) var isStarting: Bool = false
+    private(set) var recommendedLoading: Bool = false
+    var recommendedSort: SuggestedSort = .downloads
+    var lastError: String?
 
     /// Target for the model-card sheet. Non-nil while the sheet is open;
     /// `ModelCardSheet` updates it back to nil on dismiss via `.sheet(item:)`.
     /// Identifiable on `repoId+source`, so re-tapping the same row while a
     /// sheet for a different row was open re-fires the fetch task.
-    @Published var modelCardTarget: ModelCardTarget?
+    var modelCardTarget: ModelCardTarget?
 
     /// Open the model-card sheet for a row. Source is resolved from the
     /// active tab — `.hf` rows always belong to the HF tab and vice versa.
@@ -113,9 +118,13 @@ final class DownloadsScreenVM: ObservableObject {
         }
     }
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
+    @ObservationIgnored
     private var hasLoadedHFRecommended = false
+    @ObservationIgnored
     private var hasLoadedMSRecommended = false
 
     var activeTasks: [HFTaskDTO] {

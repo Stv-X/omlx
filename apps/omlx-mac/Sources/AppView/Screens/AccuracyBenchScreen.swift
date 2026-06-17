@@ -39,7 +39,7 @@ struct AccuracyBenchScreen: View {
     // VM is owned by AppServices so an in-flight queue (or in-progress
     // benchmark) survives screen unloads. Same rationale as
     // ThroughputBenchScreen — see AppServices.accuracyBench.
-    @ObservedObject var vm: AccuracyBenchScreenVM
+    @Bindable var vm: AccuracyBenchScreenVM
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {

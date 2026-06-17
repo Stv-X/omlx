@@ -1,18 +1,21 @@
 import SwiftUI
 
 @MainActor
-final class ModelsScreenVM: ObservableObject {
-    @Published private(set) var allModels: [ModelDTO] = []
-    @Published var lastError: String?
+@Observable
+final class ModelsScreenVM {
+    private(set) var allModels: [ModelDTO] = []
+    var lastError: String?
     /// Library row the user just clicked "trash" on; non-nil drives the
     /// confirmation dialog. Cleared on cancel or after delete completes.
-    @Published var pendingRemoveID: String?
+    var pendingRemoveID: String?
     /// While a delete is in flight, the row shows a spinner instead of the
     /// trash glyph and the whole row's button-stack is disabled to prevent
     /// double-tap deletes against a model the server is still unloading.
-    @Published private(set) var deletingID: String?
+    private(set) var deletingID: String?
 
+    @ObservationIgnored
     private weak var client: OMLXClient?
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
 
     var activeModels: [ModelDTO] {
