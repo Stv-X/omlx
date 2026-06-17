@@ -63,7 +63,7 @@
 		8BB000000000000000000004 /* ModelSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000004 /* ModelSettingsScreen.swift */; };
 		8BB000000000000000000005 /* ChatTemplateKwargs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000005 /* ChatTemplateKwargs.swift */; };
 		8BB000000000000000000006 /* DflashByteSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000006 /* DflashByteSize.swift */; };
-		8BB000000000000000000007 /* SystemMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000007 /* SystemMetrics.swift */; };
+		8BB000000000000000000007 /* SystemMetricsPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000007 /* SystemMetricsPoller.swift */; };
 		8BB000000000000000000008 /* ProfileViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000008 /* ProfileViews.swift */; };
 		8BB000000000000000000009 /* ProfileWorkingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC000000000000000000009 /* ProfileWorkingState.swift */; };
 		8BB00000000000000000000A /* MSTaskDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CC00000000000000000000A /* MSTaskDTO.swift */; };
@@ -188,7 +188,7 @@
 		8CC000000000000000000004 /* ModelSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSettingsScreen.swift; sourceTree = "<group>"; };
 		8CC000000000000000000005 /* ChatTemplateKwargs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTemplateKwargs.swift; sourceTree = "<group>"; };
 		8CC000000000000000000006 /* DflashByteSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DflashByteSize.swift; sourceTree = "<group>"; };
-		8CC000000000000000000007 /* SystemMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetrics.swift; sourceTree = "<group>"; };
+		8CC000000000000000000007 /* SystemMetricsPoller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsPoller.swift; sourceTree = "<group>"; };
 		8CC000000000000000000008 /* ProfileViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViews.swift; sourceTree = "<group>"; };
 		8CC000000000000000000009 /* ProfileWorkingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileWorkingState.swift; sourceTree = "<group>"; };
 		8CC00000000000000000000A /* MSTaskDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MSTaskDTO.swift; sourceTree = "<group>"; };
@@ -384,7 +384,7 @@
 				6CC000000000000000000001 /* AppView.swift */,
 				6CC000000000000000000002 /* AppSection.swift */,
 				7CC000000000000000000001 /* AppServices.swift */,
-				9CC000000000000000000006 /* PresetBundleStore.swift */,
+				AA81FB452FE29345001BF56E /* Utils */,
 				AAD9D5152FE283B000FAEA05 /* ViewModels */,
 				6EE000000000000000000002 /* Screens */,
 			);
@@ -400,9 +400,6 @@
 				6CC000000000000000000007 /* ModelsScreen.swift */,
 				6CC000000000000000000008 /* DownloadsScreen.swift */,
 				8CC000000000000000000004 /* ModelSettingsScreen.swift */,
-				8CC000000000000000000005 /* ChatTemplateKwargs.swift */,
-				8CC000000000000000000006 /* DflashByteSize.swift */,
-				8CC000000000000000000007 /* SystemMetrics.swift */,
 				8CC000000000000000000008 /* ProfileViews.swift */,
 				8CC000000000000000000009 /* ProfileWorkingState.swift */,
 				6CC000000000000000000009 /* IntegrationsScreen.swift */,
@@ -457,6 +454,17 @@
 				BCC000000000000000000004 /* ReleasesChecker.swift */,
 			);
 			path = Updater;
+			sourceTree = "<group>";
+		};
+		AA81FB452FE29345001BF56E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				9CC000000000000000000006 /* PresetBundleStore.swift */,
+				8CC000000000000000000005 /* ChatTemplateKwargs.swift */,
+				8CC000000000000000000006 /* DflashByteSize.swift */,
+				8CC000000000000000000007 /* SystemMetricsPoller.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		AAD9D5152FE283B000FAEA05 /* ViewModels */ = {
@@ -696,7 +704,7 @@
 				8BB000000000000000000004 /* ModelSettingsScreen.swift in Sources */,
 				8BB000000000000000000005 /* ChatTemplateKwargs.swift in Sources */,
 				8BB000000000000000000006 /* DflashByteSize.swift in Sources */,
-				8BB000000000000000000007 /* SystemMetrics.swift in Sources */,
+				8BB000000000000000000007 /* SystemMetricsPoller.swift in Sources */,
 				8BB000000000000000000008 /* ProfileViews.swift in Sources */,
 				8BB000000000000000000009 /* ProfileWorkingState.swift in Sources */,
 				9BB000000000000000000001 /* SubKeyDTO.swift in Sources */,
