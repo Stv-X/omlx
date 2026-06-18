@@ -4,10 +4,10 @@
 // reaches the build instead of silently flipping every user template
 // into the read-only group.
 
-import XCTest
+import Testing
 @testable import oMLX
 
-final class ProfileScopeTests: XCTestCase {
+struct ProfileScopeTests {
 
     private func template(isBuiltin: Bool?) -> ProfileDTO {
         ProfileDTO(
@@ -19,18 +19,21 @@ final class ProfileScopeTests: XCTestCase {
         )
     }
 
-    func testBuiltinTrueResolvesToPreset() {
-        XCTAssertEqual(template(isBuiltin: true).templateScope, .preset)
+    @Test("Builtin True Resolves To Preset")
+    func builtinTrueResolvesToPreset() {
+        #expect(template(isBuiltin: true).templateScope == .preset)
     }
 
-    func testBuiltinFalseResolvesToGlobal() {
-        XCTAssertEqual(template(isBuiltin: false).templateScope, .global)
+    @Test("Builtin False Resolves To Global")
+    func builtinFalseResolvesToGlobal() {
+        #expect(template(isBuiltin: false).templateScope == .global)
     }
 
-    func testMissingBuiltinDefaultsToGlobal() {
+    @Test("Missing Builtin Defaults To Global")
+    func missingBuiltinDefaultsToGlobal() {
         // Legacy / partial server responses where the field is absent —
         // the server is the only source of truth for builtin status, so
         // "the server didn't claim built-in" means user-managed.
-        XCTAssertEqual(template(isBuiltin: nil).templateScope, .global)
+        #expect(template(isBuiltin: nil).templateScope == .global)
     }
 }

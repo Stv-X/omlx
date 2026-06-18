@@ -6,10 +6,11 @@
 // older server builds, and `created_at`/`updated_at` remain nullable
 // because user templates may persist without stamps in legacy state.
 
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class ProfileDTODecodeTests: XCTestCase {
+struct ProfileDTODecodeTests {
 
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -17,7 +18,8 @@ final class ProfileDTODecodeTests: XCTestCase {
         return d
     }()
 
-    func testTemplateWithNullTimestampsDecodes() throws {
+    @Test("Template With Null Timestamps Decodes")
+    func templateWithNullTimestampsDecodes() throws {
         // Templates with null `created_at`/`updated_at` (legacy disk
         // state from before timestamps were required) must still
         // decode — non-optional fields here would silently empty the
@@ -39,15 +41,16 @@ final class ProfileDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ProfileDTO.self, from: json)
-        XCTAssertEqual(dto.name, "shared-coding")
-        XCTAssertEqual(dto.displayName, "Shared · Coding")
-        XCTAssertNil(dto.createdAt)
-        XCTAssertNil(dto.updatedAt)
-        XCTAssertEqual(dto.isBuiltin, false)
-        XCTAssertNotNil(dto.settings)
+        #expect(dto.name == "shared-coding")
+        #expect(dto.displayName == "Shared · Coding")
+        #expect(dto.createdAt == nil)
+        #expect(dto.updatedAt == nil)
+        #expect(dto.isBuiltin == false)
+        #expect(dto.settings != nil)
     }
 
-    func testUserTemplateWithStampsDecodes() throws {
+    @Test("User Template With Stamps Decodes")
+    func userTemplateWithStampsDecodes() throws {
         let json = """
         {
             "name": "my-tuned",
@@ -61,12 +64,13 @@ final class ProfileDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ProfileDTO.self, from: json)
-        XCTAssertEqual(dto.createdAt, "2026-05-12T10:00:00+00:00")
-        XCTAssertEqual(dto.updatedAt, "2026-05-12T10:00:00+00:00")
-        XCTAssertEqual(dto.isBuiltin, false)
+        #expect(dto.createdAt == "2026-05-12T10:00:00+00:00")
+        #expect(dto.updatedAt == "2026-05-12T10:00:00+00:00")
+        #expect(dto.isBuiltin == false)
     }
 
-    func testTemplateListDecodes() throws {
+    @Test("Template List Decodes")
+    func templateListDecodes() throws {
         // After the builtin-template retirement, the templates list is
         // user-created entries only. The DTO still tolerates the legacy
         // `is_builtin: true` shape from stale state — included here as
@@ -97,13 +101,14 @@ final class ProfileDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let resp = try decoder.decode(TemplateListResponse.self, from: json)
-        XCTAssertEqual(resp.templates.count, 2)
-        XCTAssertEqual(resp.templates[0].isBuiltin, true)
-        XCTAssertEqual(resp.templates[1].isBuiltin, false)
-        XCTAssertEqual(resp.templates[1].createdAt, "2026-05-12T10:00:00+00:00")
+        #expect(resp.templates.count == 2)
+        #expect(resp.templates[0].isBuiltin == true)
+        #expect(resp.templates[1].isBuiltin == false)
+        #expect(resp.templates[1].createdAt == "2026-05-12T10:00:00+00:00")
     }
 
-    func testModelProfileWithExposeAsModelDecodes() throws {
+    @Test("Model Profile With Expose As Model Decodes")
+    func modelProfileWithExposeAsModelDecodes() throws {
         // /api/models/{id}/profiles carries `expose_as_model` plus the
         // server-derived `model_id` and `has_engine_fields` — the server
         // owns the engine-field classification, the client never mirrors it.
@@ -122,29 +127,35 @@ final class ProfileDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ProfileDTO.self, from: json)
-        XCTAssertEqual(dto.exposeAsModel, true)
-        XCTAssertEqual(dto.modelId, "qwen-base:thinking")
-        XCTAssertEqual(dto.hasEngineFields, true)
+        #expect(dto.exposeAsModel == true)
+        #expect(dto.modelId == "qwen-base:thinking")
+        #expect(dto.hasEngineFields == true)
     }
 
-    func testUpdateRequestOmitsExposeAsModelWhenNil() throws {
+    @Test("Update Request Omits Expose As Model When Nil")
+    func updateRequestOmitsExposeAsModelWhenNil() throws {
         // The server merges only the fields present in the body, so a
         // settings-only update must NOT carry `expose_as_model` — sending
         // it would clobber exposure state set from the web dashboard.
         let encoder = JSONEncoder()
 
-        let settingsOnly = try JSONSerialization.jsonObject(
-            with: encoder.encode(UpdateProfileRequest(settings: [:]))
-        ) as! [String: Any]
-        XCTAssertNil(settingsOnly["expose_as_model"])
+        let settingsOnly = try #require(
+            try JSONSerialization.jsonObject(
+                with: encoder.encode(UpdateProfileRequest(settings: [:]))
+            ) as? [String: Any]
+        )
+        #expect(settingsOnly["expose_as_model"] == nil)
 
-        let exposeToggle = try JSONSerialization.jsonObject(
-            with: encoder.encode(UpdateProfileRequest(exposeAsModel: true))
-        ) as! [String: Any]
-        XCTAssertEqual(exposeToggle["expose_as_model"] as? Bool, true)
+        let exposeToggle = try #require(
+            try JSONSerialization.jsonObject(
+                with: encoder.encode(UpdateProfileRequest(exposeAsModel: true))
+            ) as? [String: Any]
+        )
+        #expect(exposeToggle["expose_as_model"] as? Bool == true)
     }
 
-    func testLegacyResponseMissingIsBuiltinStillDecodes() throws {
+    @Test("Legacy Response Missing Is Builtin Still Decodes")
+    func legacyResponseMissingIsBuiltinStillDecodes() throws {
         // The server is the new contract carrier and always sets is_builtin,
         // but the field is declared optional on the Swift side so an older
         // server (or a /api/models/{id}/profiles response that doesn't set
@@ -161,6 +172,6 @@ final class ProfileDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ProfileDTO.self, from: json)
-        XCTAssertNil(dto.isBuiltin)
+        #expect(dto.isBuiltin == nil)
     }
 }

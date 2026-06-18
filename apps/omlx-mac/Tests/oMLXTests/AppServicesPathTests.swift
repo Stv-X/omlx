@@ -7,67 +7,56 @@
 // process needed, so each test stays fast and hermetic. relocateOrphanPaths
 // touches the filesystem — we feed it a settings.json in a per-test temp dir.
 
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class AppServicesPathTests: XCTestCase {
+struct AppServicesPathTests {
 
     // MARK: relocate(path:oldBase:newBase:)
 
-    func testRelocateInsidePrefix() {
-        XCTAssertEqual(
-            AppServices.relocate(path: "/old/sub/dir",
+    @Test("Relocate Inside Prefix")
+    func relocateInsidePrefix() {
+        #expect(AppServices.relocate(path: "/old/sub/dir",
                                  oldBase: "/old",
-                                 newBase: "/new"),
-            "/new/sub/dir"
-        )
+                                 newBase: "/new") == "/new/sub/dir")
     }
 
-    func testRelocateExactMatch() {
-        XCTAssertEqual(
-            AppServices.relocate(path: "/old", oldBase: "/old", newBase: "/new"),
-            "/new"
-        )
+    @Test("Relocate Exact Match")
+    func relocateExactMatch() {
+        #expect(AppServices.relocate(path: "/old", oldBase: "/old", newBase: "/new") == "/new")
     }
 
-    func testRelocateOutsideTreeIsUnchanged() {
-        XCTAssertEqual(
-            AppServices.relocate(path: "/Volumes/SSD/models",
+    @Test("Relocate Outside Tree Is Unchanged")
+    func relocateOutsideTreeIsUnchanged() {
+        #expect(AppServices.relocate(path: "/Volumes/SSD/models",
                                  oldBase: "/Users/Fido/.omlx",
-                                 newBase: "/Users/Fido/.omlx-other"),
-            "/Volumes/SSD/models"
-        )
+                                 newBase: "/Users/Fido/.omlx-other") == "/Volumes/SSD/models")
     }
 
-    func testRelocateNearMissPrefixIsUnchanged() {
+    @Test("Relocate Near Miss Prefix Is Unchanged")
+    func relocateNearMissPrefixIsUnchanged() {
         // `/old-x` must NOT be rewritten when oldBase is `/old` — guards
         // against a naive `hasPrefix` without a trailing-slash boundary.
-        XCTAssertEqual(
-            AppServices.relocate(path: "/old-x/sub",
+        #expect(AppServices.relocate(path: "/old-x/sub",
                                  oldBase: "/old",
-                                 newBase: "/new"),
-            "/old-x/sub"
-        )
+                                 newBase: "/new") == "/old-x/sub")
     }
 
-    func testRelocateEmptyStringIsUnchanged() {
-        XCTAssertEqual(
-            AppServices.relocate(path: "", oldBase: "/old", newBase: "/new"),
-            ""
-        )
+    @Test("Relocate Empty String Is Unchanged")
+    func relocateEmptyStringIsUnchanged() {
+        #expect(AppServices.relocate(path: "", oldBase: "/old", newBase: "/new") == "")
     }
 
-    func testRelocateTildeIsExpanded() {
+    @Test("Relocate Tilde Is Expanded")
+    func relocateTildeIsExpanded() {
         // The function normalizes its input via standardizingPath +
         // expandingTildeInPath. A `~`-prefixed path under the home dir
         // should still match if oldBase is the expanded home equivalent.
         let home = NSHomeDirectory()
-        XCTAssertEqual(
-            AppServices.relocate(path: "~/.omlx/models",
+        #expect(AppServices.relocate(path: "~/.omlx/models",
                                  oldBase: "\(home)/.omlx",
-                                 newBase: "\(home)/.omlx-other"),
-            "\(home)/.omlx-other/models"
-        )
+                                 newBase: "\(home)/.omlx-other") == "\(home)/.omlx-other/models")
     }
 
     // MARK: relocateOrphanPaths(in:oldBase:newBase:)
@@ -84,10 +73,15 @@ final class AppServicesPathTests: XCTestCase {
 
     private func readJSON(_ url: URL) throws -> [String: Any] {
         let data = try Data(contentsOf: url)
-        return try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        return try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
-    func testRelocateOrphanPathsHappyPath() throws {
+    private func dictionary(_ value: Any?) throws -> [String: Any] {
+        try #require(value as? [String: Any])
+    }
+
+    @Test("Relocate Orphan Paths Happy Path")
+    func relocateOrphanPathsHappyPath() throws {
         let url = try makeTempSettingsFile(contents: [
             "model": [
                 "model_dirs": ["/Users/Fido/.omlx-other/models"],
@@ -112,25 +106,24 @@ final class AppServicesPathTests: XCTestCase {
         )
 
         let after = try readJSON(url)
-        let model = after["model"] as! [String: Any]
-        XCTAssertEqual(model["model_dirs"] as! [String], ["/Users/Fido/.omlx/models"])
-        XCTAssertEqual(model["model_dir"] as! String, "/Users/Fido/.omlx/models")
-        XCTAssertEqual(model["max_model_memory"] as! String, "auto",
-                       "unrelated keys must survive the rewrite")
+        let model = try dictionary(after["model"])
+        #expect(model["model_dirs"] as? [String] == ["/Users/Fido/.omlx/models"])
+        #expect(model["model_dir"] as? String == "/Users/Fido/.omlx/models")
+        #expect(model["max_model_memory"] as? String == "auto", "unrelated keys must survive the rewrite")
 
-        let cache = after["cache"] as! [String: Any]
-        XCTAssertEqual(cache["ssd_cache_dir"] as! String, "/Users/Fido/.omlx/cache")
-        XCTAssertEqual(cache["enabled"] as! Bool, true)
+        let cache = try dictionary(after["cache"])
+        #expect(cache["ssd_cache_dir"] as? String == "/Users/Fido/.omlx/cache")
+        #expect(cache["enabled"] as? Bool == true)
 
-        let logging = after["logging"] as! [String: Any]
-        XCTAssertEqual(logging["log_dir"] as! String, "/Users/Fido/.omlx/logs")
+        let logging = try dictionary(after["logging"])
+        #expect(logging["log_dir"] as? String == "/Users/Fido/.omlx/logs")
 
-        let server = after["server"] as! [String: Any]
-        XCTAssertEqual(server["port"] as! Int, 8080,
-                       "sibling sections we don't touch must round-trip identically")
+        let server = try dictionary(after["server"])
+        #expect(server["port"] as? Int == 8080, "sibling sections we don't touch must round-trip identically")
     }
 
-    func testRelocateOrphanPathsTolerantsNullLogDir() throws {
+    @Test("Relocate Orphan Paths Tolerants Null Log Dir")
+    func relocateOrphanPathsTolerantsNullLogDir() throws {
         // Regression: log_dir: null from Python landed as NSNull in the dict
         // and earlier code paths could crash or refuse to serialize when
         // serializing back. The rewrite must leave it intact.
@@ -142,12 +135,13 @@ final class AppServicesPathTests: XCTestCase {
         try AppServices.relocateOrphanPaths(in: url, oldBase: "/old", newBase: "/new")
 
         let after = try readJSON(url)
-        let logging = after["logging"] as! [String: Any]
-        XCTAssertTrue(logging["log_dir"] is NSNull)
-        XCTAssertEqual(logging["retention_days"] as! Int, 7)
+        let logging = try dictionary(after["logging"])
+        #expect(logging["log_dir"] is NSNull)
+        #expect(logging["retention_days"] as? Int == 7)
     }
 
-    func testRelocateOrphanPathsLeavesOutsidePathsAlone() throws {
+    @Test("Relocate Orphan Paths Leaves Outside Paths Alone")
+    func relocateOrphanPathsLeavesOutsidePathsAlone() throws {
         // model_dir lives on a separate volume — the user explicitly pointed
         // it outside the basePath tree. The migration must NOT yank it back.
         let url = try makeTempSettingsFile(contents: [
@@ -161,27 +155,28 @@ final class AppServicesPathTests: XCTestCase {
         try AppServices.relocateOrphanPaths(in: url, oldBase: "/old", newBase: "/new")
 
         let after = try readJSON(url)
-        let model = after["model"] as! [String: Any]
-        XCTAssertEqual(model["model_dirs"] as! [String], ["/Volumes/SSD/models"])
-        XCTAssertEqual(model["model_dir"] as! String, "/Volumes/SSD/models")
+        let model = try dictionary(after["model"])
+        #expect(model["model_dirs"] as? [String] == ["/Volumes/SSD/models"])
+        #expect(model["model_dir"] as? String == "/Volumes/SSD/models")
 
-        let cache = after["cache"] as! [String: Any]
-        XCTAssertEqual(cache["ssd_cache_dir"] as! String, "/new/cache",
-                       "matching paths still get rewritten")
+        let cache = try dictionary(after["cache"])
+        #expect(cache["ssd_cache_dir"] as? String == "/new/cache", "matching paths still get rewritten")
     }
 
-    func testRelocateOrphanPathsFileMissingIsNoOp() throws {
+    @Test("Relocate Orphan Paths File Missing Is No Op")
+    func relocateOrphanPathsFileMissingIsNoOp() throws {
         // The file may legitimately not exist on first-run installs; the
         // function must not crash or throw.
         let missing = FileManager.default.temporaryDirectory
             .appendingPathComponent("does-not-exist-\(UUID().uuidString).json")
-        XCTAssertNoThrow(
+        #expect(throws: Never.self) {
             try AppServices.relocateOrphanPaths(in: missing,
                                                 oldBase: "/old", newBase: "/new")
-        )
+        }
     }
 
-    func testRelocateOrphanPathsSkipsEmptyStringPaths() throws {
+    @Test("Relocate Orphan Paths Skips Empty String Paths")
+    func relocateOrphanPathsSkipsEmptyStringPaths() throws {
         // Empty-string path fields are valid placeholders that mean "use
         // default" — the rewrite must not silently turn "" into newBase.
         let url = try makeTempSettingsFile(contents: [
@@ -192,7 +187,9 @@ final class AppServicesPathTests: XCTestCase {
         try AppServices.relocateOrphanPaths(in: url, oldBase: "/old", newBase: "/new")
 
         let after = try readJSON(url)
-        XCTAssertEqual((after["model"] as! [String: Any])["model_dir"] as! String, "")
-        XCTAssertEqual((after["cache"] as! [String: Any])["ssd_cache_dir"] as! String, "")
+        let model = try dictionary(after["model"])
+        #expect(model["model_dir"] as? String == "")
+        let cache = try dictionary(after["cache"])
+        #expect(cache["ssd_cache_dir"] as? String == "")
     }
 }

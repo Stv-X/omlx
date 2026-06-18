@@ -25,6 +25,7 @@
 import Foundation
 
 struct AppConfig: Sendable, Equatable, Codable {
+    nonisolated(unsafe) static var bootstrapFileURLOverrideForTests: URL?
     /// The raw bind address the user configured (e.g. `0.0.0.0`, `127.0.0.1`, `localhost`).
     var bindAddress: String
     /// The connectable host — normalises wildcard/local binds to loopback
@@ -189,7 +190,8 @@ struct AppConfig: Sendable, Equatable, Codable {
     /// has no `OMLX_BASE_PATH`. The single field it carries is the path
     /// itself; nothing else lives here.
     static func bootstrapFileURL() -> URL {
-        appSupportURL().appendingPathComponent("base-path")
+        bootstrapFileURLOverrideForTests
+            ?? appSupportURL().appendingPathComponent("base-path")
     }
 
     /// Returns the basePath stored in the bootstrap file, normalized.

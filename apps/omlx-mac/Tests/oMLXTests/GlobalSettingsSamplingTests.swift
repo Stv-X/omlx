@@ -4,10 +4,11 @@
 // rename on either edge breaks the build instead of silently dropping the
 // server defaults the Profiles tab and Server screen depend on.
 
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class GlobalSettingsSamplingTests: XCTestCase {
+struct GlobalSettingsSamplingTests {
 
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -22,9 +23,14 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         return e
     }()
 
+    private func jsonObject(from data: Data) throws -> [String: Any] {
+        try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
     // MARK: - Decode
 
-    func testSamplingDecodesFromNestedObject() throws {
+    @Test("Sampling Decodes From Nested Object")
+    func samplingDecodesFromNestedObject() throws {
         // Mirrors `omlx.settings.SamplingSettings.to_dict()` — the read
         // shape is nested under `sampling`, separate from the flat
         // `sampling_*` keys on the patch body.
@@ -48,15 +54,16 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(GlobalSettingsDTO.self, from: json)
-        XCTAssertEqual(dto.sampling?.maxContextWindow, 32768)
-        XCTAssertEqual(dto.sampling?.maxTokens, 4096)
-        XCTAssertEqual(dto.sampling?.temperature, 0.7)
-        XCTAssertEqual(dto.sampling?.topP, 0.95)
-        XCTAssertEqual(dto.sampling?.topK, 20)
-        XCTAssertEqual(dto.sampling?.repetitionPenalty, 1.05)
+        #expect(dto.sampling?.maxContextWindow == 32768)
+        #expect(dto.sampling?.maxTokens == 4096)
+        #expect(dto.sampling?.temperature == 0.7)
+        #expect(dto.sampling?.topP == 0.95)
+        #expect(dto.sampling?.topK == 20)
+        #expect(dto.sampling?.repetitionPenalty == 1.05)
     }
 
-    func testSamplingFieldIsOptional() throws {
+    @Test("Sampling Field Is Optional")
+    func samplingFieldIsOptional() throws {
         // Older server builds, or a server that hasn't populated sampling
         // yet, omit the key entirely. Decode must succeed with nil.
         let json = """
@@ -71,12 +78,13 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(GlobalSettingsDTO.self, from: json)
-        XCTAssertNil(dto.sampling)
+        #expect(dto.sampling == nil)
     }
 
     // MARK: - Patch encode
 
-    func testPatchEncodesEmbeddingBatchSizeAsSnakeCaseFlatKey() throws {
+    @Test("Patch Encodes Embedding Batch Size As Snake Case Flat Key")
+    func patchEncodesEmbeddingBatchSizeAsSnakeCaseFlatKey() throws {
         // Scheduler writes use the flat GlobalSettingsRequest shape, so the
         // Swift camelCase property must encode to embedding_batch_size.
         var patch = GlobalSettingsPatch()
@@ -85,43 +93,47 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         let data = try encoder.encode(patch)
         let str = String(data: data, encoding: .utf8) ?? ""
 
-        XCTAssertTrue(str.contains("\"embedding_batch_size\":8"), "got: \(str)")
+        #expect(str.contains("\"embedding_batch_size\":8"), "got: \(str)")
     }
 
-    func testPatchEncodesModelDirsAsSnakeCaseFlatKey() throws {
+    @Test("Patch Encodes Model Dirs As Snake Case Flat Key")
+    func patchEncodesModelDirsAsSnakeCaseFlatKey() throws {
         var patch = GlobalSettingsPatch()
         patch.modelDirs = ["/Users/test/.omlx/models", "/Users/test/.lmstudio/models"]
 
         let data = try encoder.encode(patch)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try jsonObject(from: data)
 
-        XCTAssertEqual(json["model_dirs"] as? [String], [
+        #expect(json["model_dirs"] as? [String] == [
             "/Users/test/.omlx/models",
             "/Users/test/.lmstudio/models"
         ])
     }
 
-    func testPatchEncodesHfCacheEnabledAsSnakeCaseFlatKey() throws {
+    @Test("Patch Encodes HF Cache Enabled As Snake Case Flat Key")
+    func patchEncodesHfCacheEnabledAsSnakeCaseFlatKey() throws {
         var patch = GlobalSettingsPatch()
         patch.hfCacheEnabled = false
 
         let data = try encoder.encode(patch)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try jsonObject(from: data)
 
-        XCTAssertEqual(json["hf_cache_enabled"] as? Bool, false)
+        #expect(json["hf_cache_enabled"] as? Bool == false)
     }
 
-    func testPatchEncodesHotCacheMaxSizeAsSnakeCaseFlatKey() throws {
+    @Test("Patch Encodes Hot Cache Max Size As Snake Case Flat Key")
+    func patchEncodesHotCacheMaxSizeAsSnakeCaseFlatKey() throws {
         var patch = GlobalSettingsPatch()
         patch.hotCacheMaxSize = "8GB"
 
         let data = try encoder.encode(patch)
-        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let json = try jsonObject(from: data)
 
-        XCTAssertEqual(json["hot_cache_max_size"] as? String, "8GB")
+        #expect(json["hot_cache_max_size"] as? String == "8GB")
     }
 
-    func testPatchEncodesSamplingFieldsAsSnakeCaseFlatKeys() throws {
+    @Test("Patch Encodes Sampling Fields As Snake Case Flat Keys")
+    func patchEncodesSamplingFieldsAsSnakeCaseFlatKeys() throws {
         // The Python `GlobalSettingsRequest` accepts the sampling defaults
         // as flat `sampling_*` keys (omlx/admin/routes.py:229-234), not
         // nested. The .convertToSnakeCase strategy on Swift's encoder must
@@ -137,15 +149,16 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         let data = try encoder.encode(patch)
         let str = String(data: data, encoding: .utf8) ?? ""
 
-        XCTAssertTrue(str.contains("\"sampling_max_context_window\":32768"), "got: \(str)")
-        XCTAssertTrue(str.contains("\"sampling_max_tokens\":4096"))
-        XCTAssertTrue(str.contains("\"sampling_temperature\":0.5"))
-        XCTAssertTrue(str.contains("\"sampling_top_p\":0.9"))
-        XCTAssertTrue(str.contains("\"sampling_top_k\":40"))
-        XCTAssertTrue(str.contains("\"sampling_repetition_penalty\":1.1"))
+        #expect(str.contains("\"sampling_max_context_window\":32768"), "got: \(str)")
+        #expect(str.contains("\"sampling_max_tokens\":4096"))
+        #expect(str.contains("\"sampling_temperature\":0.5"))
+        #expect(str.contains("\"sampling_top_p\":0.9"))
+        #expect(str.contains("\"sampling_top_k\":40"))
+        #expect(str.contains("\"sampling_repetition_penalty\":1.1"))
     }
 
-    func testPatchOmitsNilSamplingFields() throws {
+    @Test("Patch Omits Nil Sampling Fields")
+    func patchOmitsNilSamplingFields() throws {
         // `encodeIfPresent` for Optionals means nil fields are skipped —
         // the server's merge semantics treat any present field as an edit.
         // A patch that only touches temperature must not also overwrite
@@ -156,15 +169,16 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         let data = try encoder.encode(patch)
         let str = String(data: data, encoding: .utf8) ?? ""
 
-        XCTAssertTrue(str.contains("\"sampling_temperature\":0.42"))
-        XCTAssertFalse(str.contains("sampling_max_tokens"))
-        XCTAssertFalse(str.contains("sampling_top_p"))
-        XCTAssertFalse(str.contains("sampling_top_k"))
-        XCTAssertFalse(str.contains("sampling_repetition_penalty"))
-        XCTAssertFalse(str.contains("sampling_max_context_window"))
+        #expect(str.contains("\"sampling_temperature\":0.42"))
+        #expect(!(str.contains("sampling_max_tokens")))
+        #expect(!(str.contains("sampling_top_p")))
+        #expect(!(str.contains("sampling_top_k")))
+        #expect(!(str.contains("sampling_repetition_penalty")))
+        #expect(!(str.contains("sampling_max_context_window")))
     }
 
-    func testPatchWithNoSamplingFieldsOmitsAllKeys() throws {
+    @Test("Patch With No Sampling Fields Omits All Keys")
+    func patchWithNoSamplingFieldsOmitsAllKeys() throws {
         // A purely network-side patch (e.g. updating port) must not carry
         // empty sampling keys, or the server's merge logic would no-op
         // through them but the wire payload bloats.
@@ -174,7 +188,7 @@ final class GlobalSettingsSamplingTests: XCTestCase {
         let data = try encoder.encode(patch)
         let str = String(data: data, encoding: .utf8) ?? ""
 
-        XCTAssertTrue(str.contains("\"port\":9000"))
-        XCTAssertFalse(str.contains("sampling_"))
+        #expect(str.contains("\"port\":9000"))
+        #expect(!(str.contains("sampling_")))
     }
 }

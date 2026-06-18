@@ -1,39 +1,36 @@
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class ShellEnvWriterTests: XCTestCase {
-    private var tempHome: URL!
-    private var oldPath: String?
+@Suite(.serialized)
+final class ShellEnvWriterTests {
+    private let tempHome: URL
 
-    override func setUpWithError() throws {
+    init() throws {
         let dir = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShellEnvWriterTests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         tempHome = dir
-        oldPath = getenv("PATH").map { String(cString: $0) }
         ShellEnvWriter.homeOverrideForTests = dir
         ShellEnvWriter.shellOverrideForTests = "/bin/zsh"
         ShellEnvWriter.publicBinDirsOverrideForTests = []
         ShellEnvWriter.cliPathPrefsURLOverrideForTests = dir
             .appendingPathComponent("prefs", isDirectory: true)
             .appendingPathComponent("cli-path-prefs.json")
-        setenv("PATH", "/usr/bin", 1)
+        ShellEnvWriter.pathOverrideForTests = "/usr/bin"
     }
 
-    override func tearDownWithError() throws {
+    deinit {
         ShellEnvWriter.homeOverrideForTests = nil
         ShellEnvWriter.shellOverrideForTests = nil
         ShellEnvWriter.publicBinDirsOverrideForTests = nil
         ShellEnvWriter.cliPathPrefsURLOverrideForTests = nil
-        if let oldPath {
-            setenv("PATH", oldPath, 1)
-        }
-        if let tempHome {
-            try? FileManager.default.removeItem(at: tempHome)
-        }
+        ShellEnvWriter.pathOverrideForTests = nil
+        try? FileManager.default.removeItem(at: tempHome)
     }
 
-    func testEnsureCLIShimWritesExecutableWrapperWithoutEditingShellFiles() throws {
+    @Test("Ensure CLI Shim Writes Executable Wrapper Without Editing Shell Files")
+    func ensureCLIShimWritesExecutableWrapperWithoutEditingShellFiles() throws {
         let appURL = try makeFakeAppURL()
 
         let result = try ShellEnvWriter.ensureCLIShim(appBundleURL: appURL)
@@ -42,42 +39,44 @@ final class ShellEnvWriterTests: XCTestCase {
             .appendingPathComponent(".omlx", isDirectory: true)
             .appendingPathComponent("bin", isDirectory: true)
             .appendingPathComponent("omlx")
-        XCTAssertTrue(FileManager.default.isExecutableFile(atPath: shim.path))
+        #expect(FileManager.default.isExecutableFile(atPath: shim.path))
         let shimText = try String(contentsOf: shim, encoding: .utf8)
-        XCTAssertTrue(shimText.contains("Contents/MacOS/omlx-cli"))
-        XCTAssertTrue(shimText.contains("exec "))
+        #expect(shimText.contains("Contents/MacOS/omlx-cli"))
+        #expect(shimText.contains("exec "))
 
         let zshrc = tempHome.appendingPathComponent(".zshrc")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: zshrc.path))
-        if case .needsShellPathPrompt = result {
-            // Expected: rc edits require an explicit prompt now.
-        } else {
-            XCTFail("Expected shell PATH prompt when no public bin dir is available")
+        #expect(!(FileManager.default.fileExists(atPath: zshrc.path)))
+        guard case .needsShellPathPrompt = result else {
+            try #require(Bool(false), "Expected shell PATH prompt when no public bin dir is available")
+            return
         }
+        // Expected: rc edits require an explicit prompt now.
     }
 
-    func testEnsureCLIShimCreatesPublicSymlinkWhenWritable() throws {
+    @Test("Ensure CLI Shim Creates Public Symlink When Writable")
+    func ensureCLIShimCreatesPublicSymlinkWhenWritable() throws {
         let publicBin = tempHome.appendingPathComponent("public-bin", isDirectory: true)
         try FileManager.default.createDirectory(at: publicBin, withIntermediateDirectories: true)
         ShellEnvWriter.publicBinDirsOverrideForTests = [publicBin]
-        setenv("PATH", "\(publicBin.path):/usr/bin", 1)
+        ShellEnvWriter.pathOverrideForTests = "\(publicBin.path):/usr/bin"
         let appURL = try makeFakeAppURL()
 
         let result = try ShellEnvWriter.ensureCLIShim(appBundleURL: appURL)
 
         let publicCLI = publicBin.appendingPathComponent("omlx")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: publicCLI.path))
+        #expect(FileManager.default.fileExists(atPath: publicCLI.path))
         let destination = try FileManager.default.destinationOfSymbolicLink(atPath: publicCLI.path)
-        XCTAssertTrue(destination.hasSuffix("/.omlx/bin/omlx"))
-        XCTAssertEqual(result, .publicCommandReady(path: publicCLI.path))
-        XCTAssertFalse(FileManager.default.fileExists(atPath: tempHome.appendingPathComponent(".zshrc").path))
+        #expect(destination.hasSuffix("/.omlx/bin/omlx"))
+        #expect(result == .publicCommandReady(path: publicCLI.path))
+        #expect(!(FileManager.default.fileExists(atPath: tempHome.appendingPathComponent(".zshrc").path)))
     }
 
-    func testEnsureCLIShimDoesNotOverwriteExistingPublicCommand() throws {
+    @Test("Ensure CLI Shim Does Not Overwrite Existing Public Command")
+    func ensureCLIShimDoesNotOverwriteExistingPublicCommand() throws {
         let publicBin = tempHome.appendingPathComponent("public-bin", isDirectory: true)
         try FileManager.default.createDirectory(at: publicBin, withIntermediateDirectories: true)
         ShellEnvWriter.publicBinDirsOverrideForTests = [publicBin]
-        setenv("PATH", "\(publicBin.path):/usr/bin", 1)
+        ShellEnvWriter.pathOverrideForTests = "\(publicBin.path):/usr/bin"
         let existing = publicBin.appendingPathComponent("omlx")
         try "#!/bin/sh\n".write(to: existing, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: existing.path)
@@ -85,27 +84,29 @@ final class ShellEnvWriterTests: XCTestCase {
         let result = try ShellEnvWriter.ensureCLIShim(appBundleURL: try makeFakeAppURL())
 
         let text = try String(contentsOf: existing, encoding: .utf8)
-        XCTAssertEqual(text, "#!/bin/sh\n")
-        if case .needsShellPathPrompt(let reason) = result {
-            XCTAssertTrue(reason.contains("already exists"))
-        } else {
-            XCTFail("Expected shell PATH prompt when public command conflicts")
+        #expect(text == "#!/bin/sh\n")
+        guard case .needsShellPathPrompt(let reason) = result else {
+            try #require(Bool(false), "Expected shell PATH prompt when public command conflicts")
+            return
         }
+        #expect(reason.contains("already exists"))
     }
 
-    func testExplicitShellPathExportIsIdempotent() throws {
+    @Test("Explicit Shell Path Export Is Idempotent")
+    func explicitShellPathExportIsIdempotent() throws {
         try ShellEnvWriter.ensureShellPathExport()
         try ShellEnvWriter.ensureShellPathExport()
 
         let zshrc = tempHome.appendingPathComponent(".zshrc")
         let rcText = try String(contentsOf: zshrc, encoding: .utf8)
-        XCTAssertTrue(rcText.contains("# oMLX: CLI shim path begin"))
-        XCTAssertTrue(rcText.contains("$HOME/.omlx/bin"))
+        #expect(rcText.contains("# oMLX: CLI shim path begin"))
+        #expect(rcText.contains("$HOME/.omlx/bin"))
         let count = rcText.components(separatedBy: "# oMLX: CLI shim path begin").count - 1
-        XCTAssertEqual(count, 1)
+        #expect(count == 1)
     }
 
-    func testShimExportsBootstrapBasePath() throws {
+    @Test("Shim Exports Bootstrap Base Path")
+    func shimExportsBootstrapBasePath() throws {
         let appURL = try makeFakeAppURL()
         let output = tempHome.appendingPathComponent("base-path-output.txt")
         let cli = appURL
@@ -144,16 +145,17 @@ final class ShellEnvWriterTests: XCTestCase {
         try process.run()
         process.waitUntilExit()
 
-        XCTAssertEqual(process.terminationStatus, 0)
-        XCTAssertEqual(try String(contentsOf: output, encoding: .utf8), "/tmp/custom-omlx")
+        #expect(process.terminationStatus == 0)
+        #expect(try String(contentsOf: output, encoding: .utf8) == "/tmp/custom-omlx")
     }
 
-    func testDismissForeverPreferenceRoundTrips() throws {
-        XCTAssertFalse(ShellEnvWriter.shouldSuppressCLIPathPrompt())
+    @Test("Dismiss Forever Preference Round Trips")
+    func dismissForeverPreferenceRoundTrips() throws {
+        #expect(!(ShellEnvWriter.shouldSuppressCLIPathPrompt()))
 
         ShellEnvWriter.suppressCLIPathPromptForever()
 
-        XCTAssertTrue(ShellEnvWriter.shouldSuppressCLIPathPrompt())
+        #expect(ShellEnvWriter.shouldSuppressCLIPathPrompt())
     }
 
     private func makeFakeAppURL() throws -> URL {

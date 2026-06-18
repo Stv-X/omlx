@@ -4,104 +4,107 @@
 // in both row labels. These tests pin those mappings so an SDK roll or
 // a stray locale tweak can't change what the UI prints.
 
-import XCTest
+import Testing
 @testable import oMLX
 
-final class SystemMetricsTests: XCTestCase {
+struct SystemMetricsTests {
 
     // MARK: - Thermal severity mapping
 
-    func testThermalSeverityNominal() {
-        XCTAssertEqual(
-            SystemMetricsPoller.severity(for: .nominal),
-            .nominal
-        )
+    @Test("Thermal Severity Nominal")
+    func thermalSeverityNominal() {
+        #expect(SystemMetricsPoller.severity(for: .nominal) == .nominal)
     }
 
-    func testThermalSeverityFair() {
-        XCTAssertEqual(
-            SystemMetricsPoller.severity(for: .fair),
-            .fair
-        )
+    @Test("Thermal Severity Fair")
+    func thermalSeverityFair() {
+        #expect(SystemMetricsPoller.severity(for: .fair) == .fair)
     }
 
-    func testThermalSeveritySerious() {
-        XCTAssertEqual(
-            SystemMetricsPoller.severity(for: .serious),
-            .serious
-        )
+    @Test("Thermal Severity Serious")
+    func thermalSeveritySerious() {
+        #expect(SystemMetricsPoller.severity(for: .serious) == .serious)
     }
 
-    func testThermalSeverityCritical() {
-        XCTAssertEqual(
-            SystemMetricsPoller.severity(for: .critical),
-            .critical
-        )
+    @Test("Thermal Severity Critical")
+    func thermalSeverityCritical() {
+        #expect(SystemMetricsPoller.severity(for: .critical) == .critical)
     }
 
-    func testThermalLabelsMatchSeverity() {
-        XCTAssertEqual(SystemMetricsPoller.label(for: .nominal),  "Nominal")
-        XCTAssertEqual(SystemMetricsPoller.label(for: .fair),     "Fair")
-        XCTAssertEqual(SystemMetricsPoller.label(for: .serious),  "Serious")
-        XCTAssertEqual(SystemMetricsPoller.label(for: .critical), "Critical")
+    @Test("Thermal Labels Match Severity")
+    func thermalLabelsMatchSeverity() {
+        #expect(SystemMetricsPoller.label(for: .nominal) == "Nominal")
+        #expect(SystemMetricsPoller.label(for: .fair) == "Fair")
+        #expect(SystemMetricsPoller.label(for: .serious) == "Serious")
+        #expect(SystemMetricsPoller.label(for: .critical) == "Critical")
     }
 
     // MARK: - GPU utilization clamp
 
     @MainActor
-    func testGpuUtilizationClampedTo100WhenActiveExceedsMax() {
+    @Test("GPU Utilization Clamped To 100 When Active Exceeds Max")
+    func gpuUtilizationClampedTo100WhenActiveExceedsMax() {
         let vm = StatusScreenVM()
         vm.maxConcurrent = 8
         vm.stats = makeStats(active: 20)
-        XCTAssertEqual(vm.gpuUtilizationPercent, 100.0, accuracy: 0.001)
+        expectClose(vm.gpuUtilizationPercent, 100.0, accuracy: 0.001)
     }
 
     @MainActor
-    func testGpuUtilizationZeroWhenActiveZero() {
+    @Test("GPU Utilization Zero When Active Zero")
+    func gpuUtilizationZeroWhenActiveZero() {
         let vm = StatusScreenVM()
         vm.maxConcurrent = 8
         vm.stats = makeStats(active: 0)
-        XCTAssertEqual(vm.gpuUtilizationPercent, 0.0, accuracy: 0.001)
+        expectClose(vm.gpuUtilizationPercent, 0.0, accuracy: 0.001)
     }
 
     @MainActor
-    func testGpuUtilizationLinearInRange() {
+    @Test("GPU Utilization Linear In Range")
+    func gpuUtilizationLinearInRange() {
         let vm = StatusScreenVM()
         vm.maxConcurrent = 8
         vm.stats = makeStats(active: 4)
-        XCTAssertEqual(vm.gpuUtilizationPercent, 50.0, accuracy: 0.001)
+        expectClose(vm.gpuUtilizationPercent, 50.0, accuracy: 0.001)
     }
 
     @MainActor
-    func testGpuUtilizationHandlesZeroMaxByFloorOfOne() {
+    @Test("GPU Utilization Handles Zero Max By Floor Of One")
+    func gpuUtilizationHandlesZeroMaxByFloorOfOne() {
         // The VM's max is 0 only transiently (between init and the
         // settings load). The divisor floor of 1 prevents NaN.
         let vm = StatusScreenVM()
         vm.maxConcurrent = 0
         vm.stats = makeStats(active: 0)
-        XCTAssertEqual(vm.gpuUtilizationPercent, 0.0, accuracy: 0.001)
+        expectClose(vm.gpuUtilizationPercent, 0.0, accuracy: 0.001)
     }
 
     // MARK: - Bytes → GB formatter
 
-    func testFormatBytesAsGbRoundsToOneDecimal() {
+    @Test("Format Bytes As GB Rounds To One Decimal")
+    func formatBytesAsGbRoundsToOneDecimal() {
         // 34.6 GB in decimal bytes = 34_600_000_000.
         let bytes: UInt64 = 34_600_000_000
-        XCTAssertEqual(SystemMetricsPoller.formatBytesAsGB(bytes), "34.6")
+        #expect(SystemMetricsPoller.formatBytesAsGB(bytes) == "34.6")
     }
 
-    func testFormatBytesAsGbZero() {
-        XCTAssertEqual(SystemMetricsPoller.formatBytesAsGB(0), "0.0")
+    @Test("Format Bytes As GB Zero")
+    func formatBytesAsGbZero() {
+        #expect(SystemMetricsPoller.formatBytesAsGB(0) == "0.0")
     }
 
-    func testFormatBytesAsGbRoundsHalfUp() {
+    @Test("Format Bytes As GB Rounds Half Up")
+    func formatBytesAsGbRoundsHalfUp() {
         // 12.55 GB → "12.5" (banker's) or "12.6" (away). printf %.1f on
         // Darwin rounds half to even at the binary level — pin whichever
         // string we actually produce so a future libc swap is visible.
         let bytes: UInt64 = 12_550_000_000
         let out = SystemMetricsPoller.formatBytesAsGB(bytes)
-        XCTAssertTrue(out == "12.5" || out == "12.6",
-                      "Unexpected rounding output: \(out)")
+        #expect(out == "12.5" || out == "12.6", "Unexpected rounding output: \(out)")
+    }
+
+    private func expectClose(_ actual: Double, _ expected: Double, accuracy: Double) {
+        #expect(abs(actual - expected) <= accuracy)
     }
 
     // MARK: - Helpers

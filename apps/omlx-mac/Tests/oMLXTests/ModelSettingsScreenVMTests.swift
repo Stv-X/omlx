@@ -1,10 +1,11 @@
-import XCTest
+import Testing
 @testable import oMLX
 
 @MainActor
-final class ModelSettingsScreenVMTests: XCTestCase {
+struct ModelSettingsScreenVMTests {
 
-    func testVlmMtpDraftModelOptionsIncludeQwenMtpConfigType() {
+    @Test("VLM MTP Draft Model Options Include Qwen MTP Config Type")
+    func vlmMtpDraftModelOptionsIncludeQwenMtpConfigType() {
         let vm = ModelSettingsScreenVM()
         vm.modelID = "Qwopus3.6-35B-A3B-v1-4bit-MLXVLM-Target"
         vm.allModels = [
@@ -21,12 +22,13 @@ final class ModelSettingsScreenVMTests: XCTestCase {
 
         let values = vm.vlmMtpDraftModelOptions().map(\.0)
 
-        XCTAssertTrue(values.contains("Qwopus3.6-35B-A3B-v1-4bit-MLXVLM-MTP-Drafter"))
-        XCTAssertFalse(values.contains("Qwopus3.6-35B-A3B-v1-4bit-MLXVLM-Target"))
-        XCTAssertFalse(values.contains("Qwen3.6-Regular-Model"))
+        #expect(values.contains("Qwopus3.6-35B-A3B-v1-4bit-MLXVLM-MTP-Drafter"))
+        #expect(!(values.contains("Qwopus3.6-35B-A3B-v1-4bit-MLXVLM-Target")))
+        #expect(!(values.contains("Qwen3.6-Regular-Model")))
     }
 
-    func testVlmMtpDraftModelOptionsKeepAssistantAndStandaloneMtpFallbacks() {
+    @Test("VLM MTP Draft Model Options Keep Assistant And Standalone MTP Fallbacks")
+    func vlmMtpDraftModelOptionsKeepAssistantAndStandaloneMtpFallbacks() {
         let vm = ModelSettingsScreenVM()
         vm.modelID = "target"
         vm.allModels = [
@@ -37,9 +39,9 @@ final class ModelSettingsScreenVMTests: XCTestCase {
 
         let values = vm.vlmMtpDraftModelOptions().map(\.0)
 
-        XCTAssertTrue(values.contains("gemma-assistant-draft"))
-        XCTAssertTrue(values.contains("model-MTP-draft"))
-        XCTAssertFalse(values.contains("model-MTPLX-runtime"))
+        #expect(values.contains("gemma-assistant-draft"))
+        #expect(values.contains("model-MTP-draft"))
+        #expect(!(values.contains("model-MTPLX-runtime")))
     }
 
     private func makeModel(id: String, configModelType: String?) -> ModelDTO {

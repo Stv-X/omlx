@@ -13,10 +13,11 @@
 // String(localized:) with a key that's missing from the catalog returns
 // the key itself, so the equality check below catches missing entries.
 
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class LocalizationSmokeTests: XCTestCase {
+struct LocalizationSmokeTests {
 
     /// Hard-coded baseline of common.* keys → English values. Only the
     /// primitives actually used by at least one wrapped call site live here;
@@ -62,32 +63,47 @@ final class LocalizationSmokeTests: XCTestCase {
         "update.channel.stable", "update.confirm.title",
     ]
 
-    func testCatalogResolvesCommonBaseline() {
+    /// A bundle locked to the English ("en") localization.
+    ///
+    /// This bypasses the host device's current system language settings,
+    /// ensuring that `NSLocalizedString` calls fallback directly to English.
+    /// It prevents smoke tests from failing when executed on CI runners or
+    /// local machines configured in non-English locales.
+    private var englishBundle: Bundle {
+        let mainBundle = Bundle.main
+        if let path = mainBundle.path(forResource: "en", ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return bundle
+        }
+        return mainBundle
+    }
+
+    @Test("Catalog Resolves Common Baseline")
+    func catalogResolvesCommonBaseline() {
         // Force English so the assertion holds regardless of host locale.
         for (key, expected) in Self.commonBaseline {
-            let resolved = NSLocalizedString(key, bundle: .main,
+            let resolved = NSLocalizedString(key, bundle: englishBundle,
                                              value: key, comment: "")
-            XCTAssertEqual(resolved, expected,
-                           "common key \(key) resolved to \(resolved); expected \(expected)")
+            #expect(resolved == expected, "common key \(key) resolved to \(resolved); expected \(expected)")
         }
     }
 
-    func testSentinelKeysArePresentInCatalog() {
+    @Test("Sentinel Keys Are Present In Catalog")
+    func sentinelKeysArePresentInCatalog() {
         // Presence-only check: NSLocalizedString returns the key itself
         // when missing. We pass `value: <sentinel>` so a real missing key
         // resolves to the sentinel and never accidentally equals the key.
         let sentinel = "__missing__"
         for key in Self.sentinelKeys {
-            let resolved = NSLocalizedString(key, bundle: .main,
+            let resolved = NSLocalizedString(key, bundle: englishBundle,
                                              value: sentinel, comment: "")
-            XCTAssertNotEqual(resolved, sentinel,
-                              "key \(key) is wired in code but missing from xcstrings")
-            XCTAssertFalse(resolved.isEmpty,
-                           "key \(key) resolved to an empty string")
+            #expect(resolved != sentinel, "key \(key) is wired in code but missing from xcstrings")
+            #expect(!(resolved.isEmpty), "key \(key) resolved to an empty string")
         }
     }
 
-    func testCatalogIsValidJSON() {
+    @Test("Catalog Is Valid JSON")
+    func catalogIsValidJSON() throws {
         // Direct file-level parse so a catalog corruption (extra trailing
         // comma, bad nesting) shows up here rather than as a missing-string
         // mystery at runtime.
@@ -97,22 +113,10 @@ final class LocalizationSmokeTests: XCTestCase {
             // suite stays green when run outside Xcode's resource bundle.
             return
         }
-        let data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            XCTFail("Couldn't read Localizable.xcstrings: \(error)")
-            return
-        }
-        do {
-            let root = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-            XCTAssertEqual(root?["sourceLanguage"] as? String, "en",
-                           "catalog sourceLanguage should be en")
-            let strings = root?["strings"] as? [String: Any] ?? [:]
-            XCTAssertGreaterThan(strings.count, 800,
-                                 "catalog suspiciously small (\(strings.count) keys)")
-        } catch {
-            XCTFail("Localizable.xcstrings is not valid JSON: \(error)")
-        }
+        let data = try Data(contentsOf: url)
+        let root = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(root["sourceLanguage"] as? String == "en", "catalog sourceLanguage should be en")
+        let strings = try #require(root["strings"] as? [String: Any])
+        #expect(strings.count > 800, "catalog suspiciously small (\(strings.count) keys)")
     }
 }

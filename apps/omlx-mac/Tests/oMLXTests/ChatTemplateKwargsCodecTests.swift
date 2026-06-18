@@ -4,109 +4,121 @@
 // at compile/test time rather than silently dropping the user's
 // settings on save.
 
-import XCTest
+import Testing
 @testable import oMLX
 
-final class ChatTemplateKwargsCodecTests: XCTestCase {
+struct ChatTemplateKwargsCodecTests {
 
     // MARK: - Encode
 
-    func testEmptyEntriesEncodeToNilPair() {
+    @Test("Empty Entries Encode To Nil Pair")
+    func emptyEntriesEncodeToNilPair() {
         let (kwargs, forced) = ChatTemplateKwargsCodec.encode([])
-        XCTAssertNil(kwargs)
-        XCTAssertNil(forced)
+        #expect(kwargs == nil)
+        #expect(forced == nil)
     }
 
-    func testEnableThinkingEncodesAsBool() {
+    @Test("Enable Thinking Encodes As Bool")
+    func enableThinkingEncodesAsBool() {
         let entries = [
             ChatTemplateKwargEntry(kind: .enableThinking, value: "true", force: false),
         ]
         let (kwargs, forced) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["enable_thinking"]?.value as? Bool, true)
-        XCTAssertNil(forced)
+        #expect(kwargs?["enable_thinking"]?.value as? Bool == true)
+        #expect(forced == nil)
     }
 
-    func testEnableThinkingFalseEncodesAsBool() {
+    @Test("Enable Thinking False Encodes As Bool")
+    func enableThinkingFalseEncodesAsBool() {
         let entries = [
             ChatTemplateKwargEntry(kind: .enableThinking, value: "false", force: false),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["enable_thinking"]?.value as? Bool, false)
+        #expect(kwargs?["enable_thinking"]?.value as? Bool == false)
     }
 
-    func testReasoningEffortEncodesAsString() {
+    @Test("Reasoning Effort Encodes As String")
+    func reasoningEffortEncodesAsString() {
         let entries = [
             ChatTemplateKwargEntry(kind: .reasoningEffort, value: "medium", force: false),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["reasoning_effort"]?.value as? String, "medium")
+        #expect(kwargs?["reasoning_effort"]?.value as? String == "medium")
     }
 
-    func testCustomBoolCoercion() {
+    @Test("Custom Bool Coercion")
+    func customBoolCoercion() {
         let entries = [
             ChatTemplateKwargEntry(kind: .custom, customKey: "do_thing", value: "true"),
             ChatTemplateKwargEntry(kind: .custom, customKey: "skip_thing", value: "false"),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["do_thing"]?.value as? Bool, true)
-        XCTAssertEqual(kwargs?["skip_thing"]?.value as? Bool, false)
+        #expect(kwargs?["do_thing"]?.value as? Bool == true)
+        #expect(kwargs?["skip_thing"]?.value as? Bool == false)
     }
 
-    func testCustomIntCoercion() {
+    @Test("Custom Int Coercion")
+    func customIntCoercion() {
         let entries = [
             ChatTemplateKwargEntry(kind: .custom, customKey: "n_layers", value: "42"),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["n_layers"]?.value as? Int, 42)
+        #expect(kwargs?["n_layers"]?.value as? Int == 42)
     }
 
-    func testCustomDoubleCoercion() {
+    @Test("Custom Double Coercion")
+    func customDoubleCoercion() {
         let entries = [
             ChatTemplateKwargEntry(kind: .custom, customKey: "alpha", value: "0.25"),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["alpha"]?.value as? Double, 0.25)
+        #expect(kwargs?["alpha"]?.value as? Double == 0.25)
     }
 
-    func testCustomStringFallback() {
+    @Test("Custom String Fallback")
+    func customStringFallback() {
         // Anything that isn't bool-literal or numeric stays a string.
         let entries = [
             ChatTemplateKwargEntry(kind: .custom, customKey: "role", value: "expert"),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?["role"]?.value as? String, "expert")
+        #expect(kwargs?["role"]?.value as? String == "expert")
     }
 
-    func testCustomBlankKeyIsDropped() {
+    @Test("Custom Blank Key Is Dropped")
+    func customBlankKeyIsDropped() {
         // Mirrors dashboard.js's `e.key && e.key.trim()` guard.
         let entries = [
             ChatTemplateKwargEntry(kind: .custom, customKey: "   ", value: "v"),
             ChatTemplateKwargEntry(kind: .custom, customKey: "real", value: "v"),
         ]
         let (kwargs, _) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?.count, 1)
-        XCTAssertEqual(kwargs?["real"]?.value as? String, "v")
+        #expect(kwargs?.count == 1)
+        #expect(kwargs?["real"]?.value as? String == "v")
     }
 
-    func testForceRoutesIntoForcedList() {
+    @Test("Force Routes Into Forced List")
+    func forceRoutesIntoForcedList() {
         let entries = [
             ChatTemplateKwargEntry(kind: .enableThinking, value: "true", force: true),
             ChatTemplateKwargEntry(kind: .reasoningEffort, value: "high", force: false),
             ChatTemplateKwargEntry(kind: .custom, customKey: "k", value: "v", force: true),
         ]
         let (kwargs, forced) = ChatTemplateKwargsCodec.encode(entries)
-        XCTAssertEqual(kwargs?.count, 3)
-        XCTAssertEqual(Set(forced ?? []), Set(["enable_thinking", "k"]))
+        #expect(kwargs?.count == 3)
+        #expect(Set(forced ?? []) == Set(["enable_thinking", "k"]))
     }
 
     // MARK: - Decode
 
-    func testDecodeEmptyDictReturnsEmpty() {
-        XCTAssertTrue(ChatTemplateKwargsCodec.decode(kwargs: nil, forced: nil).isEmpty)
-        XCTAssertTrue(ChatTemplateKwargsCodec.decode(kwargs: [:], forced: nil).isEmpty)
+    @Test("Decode Empty Dict Returns Empty")
+    func decodeEmptyDictReturnsEmpty() {
+        #expect(ChatTemplateKwargsCodec.decode(kwargs: nil, forced: nil).isEmpty)
+        #expect(ChatTemplateKwargsCodec.decode(kwargs: [:], forced: nil).isEmpty)
     }
 
-    func testDecodeKnownKindsAppearFirst() {
+    @Test("Decode Known Kinds Appear First")
+    func decodeKnownKindsAppearFirst() {
         // The HTML editor's UX intuition is that the canonical kinds
         // ride at the top; custom entries below in alphabetical order.
         let kwargs: [String: AnyCodable] = [
@@ -116,15 +128,16 @@ final class ChatTemplateKwargsCodecTests: XCTestCase {
             "reasoning_effort": AnyCodable("low"),
         ]
         let entries = ChatTemplateKwargsCodec.decode(kwargs: kwargs, forced: nil)
-        XCTAssertEqual(entries.count, 4)
-        XCTAssertEqual(entries[0].kind, .enableThinking)
-        XCTAssertEqual(entries[1].kind, .reasoningEffort)
-        XCTAssertEqual(entries[2].kind, .custom)
-        XCTAssertEqual(entries[2].customKey, "a_custom")
-        XCTAssertEqual(entries[3].customKey, "z_custom")
+        #expect(entries.count == 4)
+        #expect(entries[0].kind == .enableThinking)
+        #expect(entries[1].kind == .reasoningEffort)
+        #expect(entries[2].kind == .custom)
+        #expect(entries[2].customKey == "a_custom")
+        #expect(entries[3].customKey == "z_custom")
     }
 
-    func testDecodeAppliesForcedFlag() {
+    @Test("Decode Applies Forced Flag")
+    func decodeAppliesForcedFlag() {
         let kwargs: [String: AnyCodable] = [
             "enable_thinking": AnyCodable(true),
             "custom_a": AnyCodable("v"),
@@ -133,11 +146,12 @@ final class ChatTemplateKwargsCodecTests: XCTestCase {
             kwargs: kwargs,
             forced: ["enable_thinking"]
         )
-        XCTAssertTrue(entries.first(where: { $0.kind == .enableThinking })!.force)
-        XCTAssertFalse(entries.first(where: { $0.kind == .custom })!.force)
+        #expect(entries.first(where: { $0.kind == .enableThinking })!.force)
+        #expect(!(entries.first(where: { $0.kind == .custom })!.force))
     }
 
-    func testDecodeStringifiesValues() {
+    @Test("Decode Stringifies Values")
+    func decodeStringifiesValues() {
         let kwargs: [String: AnyCodable] = [
             "enable_thinking": AnyCodable(true),
             "n":               AnyCodable(7),
@@ -148,16 +162,17 @@ final class ChatTemplateKwargsCodecTests: XCTestCase {
         let byKey: [String: String] = entries.reduce(into: [:]) {
             $0[$1.resolvedKey ?? ""] = $1.value
         }
-        XCTAssertEqual(byKey["enable_thinking"], "true")
-        XCTAssertEqual(byKey["n"], "7")
+        #expect(byKey["enable_thinking"] == "true")
+        #expect(byKey["n"] == "7")
         // 0.25 is non-integral → keeps decimal form.
-        XCTAssertEqual(byKey["alpha"], "0.25")
-        XCTAssertEqual(byKey["role"], "expert")
+        #expect(byKey["alpha"] == "0.25")
+        #expect(byKey["role"] == "expert")
     }
 
     // MARK: - Round-trip
 
-    func testRoundTripPreservesKnownAndCustomEntries() {
+    @Test("Round Trip Preserves Known And Custom Entries")
+    func roundTripPreservesKnownAndCustomEntries() {
         let original = [
             ChatTemplateKwargEntry(kind: .enableThinking, value: "false", force: true),
             ChatTemplateKwargEntry(kind: .reasoningEffort, value: "high", force: false),
@@ -165,16 +180,16 @@ final class ChatTemplateKwargsCodecTests: XCTestCase {
         ]
         let (kwargs, forced) = ChatTemplateKwargsCodec.encode(original)
         let roundtripped = ChatTemplateKwargsCodec.decode(kwargs: kwargs, forced: forced)
-        XCTAssertEqual(roundtripped.count, 3)
+        #expect(roundtripped.count == 3)
 
         let byKey: [String: ChatTemplateKwargEntry] = roundtripped.reduce(into: [:]) {
             $0[$1.resolvedKey ?? ""] = $1
         }
-        XCTAssertEqual(byKey["enable_thinking"]?.value, "false")
-        XCTAssertEqual(byKey["enable_thinking"]?.force, true)
-        XCTAssertEqual(byKey["reasoning_effort"]?.value, "high")
-        XCTAssertEqual(byKey["reasoning_effort"]?.force, false)
-        XCTAssertEqual(byKey["max_branches"]?.value, "5")
-        XCTAssertEqual(byKey["max_branches"]?.force, true)
+        #expect(byKey["enable_thinking"]?.value == "false")
+        #expect(byKey["enable_thinking"]?.force == true)
+        #expect(byKey["reasoning_effort"]?.value == "high")
+        #expect(byKey["reasoning_effort"]?.force == false)
+        #expect(byKey["max_branches"]?.value == "5")
+        #expect(byKey["max_branches"]?.force == true)
     }
 }

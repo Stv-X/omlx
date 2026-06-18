@@ -1,38 +1,42 @@
 import AppKit
 import SwiftUI
-import XCTest
+import Testing
 @testable import oMLX
 
-final class ThemeTests: XCTestCase {
+@MainActor
+struct ThemeTests {
 
-    func testLightWindowBackgroundUsesStandardWindowColor() {
-        let actual = resolvedRGBA(OMLXTheme.light.windowBg, appearance: .aqua)
-        let expected = resolvedRGBA(Color(nsColor: .windowBackgroundColor),
-                                    appearance: .aqua)
-        let underPage = resolvedRGBA(Color(nsColor: .underPageBackgroundColor),
-                                     appearance: .aqua)
-
-        assertClose(actual, expected)
-        XCTAssertGreaterThan(actual.red, 0.95)
-        XCTAssertGreaterThan(abs(actual.red - underPage.red), 0.25)
-    }
-
-    func testDarkWindowBackgroundKeepsUnderPageColor() {
-        let actual = resolvedRGBA(OMLXTheme.dark.windowBg, appearance: .darkAqua)
-        let expected = resolvedRGBA(Color(nsColor: .underPageBackgroundColor),
-                                    appearance: .darkAqua)
+    @Test("Light Window Background Uses Standard Window Color")
+    func lightWindowBackgroundUsesStandardWindowColor() throws {
+        let actual = try resolvedRGBA(OMLXTheme.light.windowBg, appearance: .aqua)
+        let expected = try resolvedRGBA(Color(nsColor: .windowBackgroundColor),
+                                        appearance: .aqua)
+        let underPage = try resolvedRGBA(Color(nsColor: .underPageBackgroundColor),
+                                         appearance: .aqua)
 
         assertClose(actual, expected)
+        #expect(actual.red > 0.95)
+        #expect(abs(actual.red - underPage.red) > 0.25)
     }
 
-    func testLightGroupBackgroundIsSubtleGrayWash() {
-        let actual = resolvedRGBA(OMLXTheme.light.groupBg, appearance: .aqua)
+    @Test("Dark Window Background Keeps Under Page Color")
+    func darkWindowBackgroundKeepsUnderPageColor() throws {
+        let actual = try resolvedRGBA(OMLXTheme.dark.windowBg, appearance: .darkAqua)
+        let expected = try resolvedRGBA(Color(nsColor: .underPageBackgroundColor),
+                                        appearance: .darkAqua)
 
-        XCTAssertLessThan(actual.red, 0.01)
-        XCTAssertLessThan(actual.green, 0.01)
-        XCTAssertLessThan(actual.blue, 0.01)
-        XCTAssertGreaterThan(actual.alpha, 0.025)
-        XCTAssertLessThan(actual.alpha, 0.05)
+        assertClose(actual, expected)
+    }
+
+    @Test("Light Group Background Is Subtle Gray Wash")
+    func lightGroupBackgroundIsSubtleGrayWash() throws {
+        let actual = try resolvedRGBA(OMLXTheme.light.groupBg, appearance: .aqua)
+
+        #expect(actual.red < 0.01)
+        #expect(actual.green < 0.01)
+        #expect(actual.blue < 0.01)
+        #expect(actual.alpha > 0.025)
+        #expect(actual.alpha < 0.05)
     }
 
     private typealias RGBA = (
@@ -42,11 +46,12 @@ final class ThemeTests: XCTestCase {
         alpha: CGFloat
     )
 
-    private func resolvedRGBA(_ color: Color, appearance: NSAppearance.Name) -> RGBA {
+    private func resolvedRGBA(_ color: Color, appearance: NSAppearance.Name) throws -> RGBA {
         let nsColor = NSColor(color)
         var components: RGBA?
-        NSAppearance(named: appearance)!.performAsCurrentDrawingAppearance {
-            let resolved = nsColor.usingColorSpace(.sRGB)!
+        let nsAppearance = try #require(NSAppearance(named: appearance))
+        nsAppearance.performAsCurrentDrawingAppearance {
+            guard let resolved = nsColor.usingColorSpace(.sRGB) else { return }
             components = (
                 red: resolved.redComponent,
                 green: resolved.greenComponent,
@@ -54,43 +59,17 @@ final class ThemeTests: XCTestCase {
                 alpha: resolved.alphaComponent
             )
         }
-        return components!
+        return try #require(components)
     }
 
     private func assertClose(
         _ actual: RGBA,
         _ expected: RGBA,
-        accuracy: CGFloat = 0.001,
-        file: StaticString = #filePath,
-        line: UInt = #line
+        accuracy: CGFloat = 0.001
     ) {
-        XCTAssertEqual(
-            actual.red,
-            expected.red,
-            accuracy: accuracy,
-            file: file,
-            line: line
-        )
-        XCTAssertEqual(
-            actual.green,
-            expected.green,
-            accuracy: accuracy,
-            file: file,
-            line: line
-        )
-        XCTAssertEqual(
-            actual.blue,
-            expected.blue,
-            accuracy: accuracy,
-            file: file,
-            line: line
-        )
-        XCTAssertEqual(
-            actual.alpha,
-            expected.alpha,
-            accuracy: accuracy,
-            file: file,
-            line: line
-        )
+        #expect(abs(actual.red - expected.red) <= accuracy)
+        #expect(abs(actual.green - expected.green) <= accuracy)
+        #expect(abs(actual.blue - expected.blue) <= accuracy)
+        #expect(abs(actual.alpha - expected.alpha) <= accuracy)
     }
 }

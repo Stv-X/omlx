@@ -5,10 +5,11 @@
 // — so a decode regression here would silently break both Hugging Face and
 // ModelScope model-card sheets at once.
 
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
-final class ModelCardDTODecodeTests: XCTestCase {
+struct ModelCardDTODecodeTests {
 
     /// Mirrors the `OMLXClient` decoder configuration so snake_case
     /// `model_card` maps to the camelCase `modelCard` property.
@@ -18,7 +19,8 @@ final class ModelCardDTODecodeTests: XCTestCase {
         return d
     }()
 
-    func testDecodeMarkdownBody() throws {
+    @Test("Decode Markdown Body")
+    func decodeMarkdownBody() throws {
         let json = """
         {
             "model_card": "# Model\\n\\nSome description.\\n\\n- bullet\\n"
@@ -26,10 +28,11 @@ final class ModelCardDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.modelCard, "# Model\n\nSome description.\n\n- bullet\n")
+        #expect(dto.modelCard == "# Model\n\nSome description.\n\n- bullet\n")
     }
 
-    func testDecodeEmptyStringIsLegal() throws {
+    @Test("Decode Empty String Is Legal")
+    func decodeEmptyStringIsLegal() throws {
         // The server signals "no README on the upstream repo" with an
         // empty string rather than a 404 — the sheet's `.empty` branch
         // distinguishes it from `.failed`. If we changed decoding to
@@ -38,10 +41,11 @@ final class ModelCardDTODecodeTests: XCTestCase {
         let json = #"{"model_card": ""}"#.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.modelCard, "")
+        #expect(dto.modelCard == "")
     }
 
-    func testIgnoresExtraFields() throws {
+    @Test("Ignores Extra Fields")
+    func ignoresExtraFields() throws {
         // Real responses include additional fields the DTO doesn't
         // currently consume (e.g. `tags`, `files`, `description`,
         // `created_at`). Swift's default Decodable behaviour ignores
@@ -58,12 +62,13 @@ final class ModelCardDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.modelCard, "Hello")
-        XCTAssertNil(dto.downloads)
-        XCTAssertNil(dto.likes)
+        #expect(dto.modelCard == "Hello")
+        #expect(dto.downloads == nil)
+        #expect(dto.likes == nil)
     }
 
-    func testDecodesFullHFMetadata() throws {
+    @Test("Decodes Full HF Metadata")
+    func decodesFullHFMetadata() throws {
         // Production-shaped HF response — every metadata field populated.
         // Drives the sheet's badges (params/size/pipeline_tag), the
         // downloads / likes counters, and the LoRA-adapter warning.
@@ -84,15 +89,16 @@ final class ModelCardDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.pipelineTag, "text-generation")
-        XCTAssertEqual(dto.paramsFormatted, "3B")
-        XCTAssertEqual(dto.sizeFormatted, "4.2 GB")
-        XCTAssertEqual(dto.downloads, 12500)
-        XCTAssertEqual(dto.likes, 234)
-        XCTAssertEqual(dto.isAdapter, false)
+        #expect(dto.pipelineTag == "text-generation")
+        #expect(dto.paramsFormatted == "3B")
+        #expect(dto.sizeFormatted == "4.2 GB")
+        #expect(dto.downloads == 12500)
+        #expect(dto.likes == 234)
+        #expect(dto.isAdapter == false)
     }
 
-    func testDecodesMSResponseWithoutHFOnlyFields() throws {
+    @Test("Decodes MS Response Without HF Only Fields")
+    func decodesMSResponseWithoutHFOnlyFields() throws {
         // ModelScope returns the same envelope but omits `is_adapter`
         // entirely and always leaves `params`/`params_formatted` null
         // (see ms_downloader.py). Decoder must treat both as nil rather
@@ -110,25 +116,26 @@ final class ModelCardDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertNil(dto.pipelineTag)
-        XCTAssertNil(dto.paramsFormatted)
-        XCTAssertEqual(dto.sizeFormatted, "8.1 GB")
-        XCTAssertEqual(dto.downloads, 4200)
-        XCTAssertNil(dto.isAdapter,
-                     "MS responses omit is_adapter entirely; decoder must produce nil, not throw.")
+        #expect(dto.pipelineTag == nil)
+        #expect(dto.paramsFormatted == nil)
+        #expect(dto.sizeFormatted == "8.1 GB")
+        #expect(dto.downloads == 4200)
+        #expect(dto.isAdapter == nil, "MS responses omit is_adapter entirely; decoder must produce nil, not throw.")
     }
 
-    func testDecodesLoraAdapter() throws {
+    @Test("Decodes Lora Adapter")
+    func decodesLoraAdapter() throws {
         // Adapter repos surface with `is_adapter: true` — the sheet's
         // warning banner hinges on this. Test it as an isolated case
         // so a server-side rename catches here, not via the larger
         // metadata test.
         let json = #"{"model_card": "...", "is_adapter": true}"#.data(using: .utf8)!
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.isAdapter, true)
+        #expect(dto.isAdapter == true)
     }
 
-    func testDecodesFilesList() throws {
+    @Test("Decodes Files List")
+    func decodesFilesList() throws {
         // Files tab payload — server emits one object per repo file with
         // `name`, raw `size` in bytes, and a `size_formatted` string we
         // surface directly. `size_formatted` may be empty when the file
@@ -146,30 +153,34 @@ final class ModelCardDTODecodeTests: XCTestCase {
         """.data(using: .utf8)!
 
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.files?.count, 3)
-        XCTAssertEqual(dto.files?[0].name, "README.md")
-        XCTAssertEqual(dto.files?[1].size, 4_500_000_000)
-        XCTAssertEqual(dto.files?[1].sizeFormatted, "4.2 GB")
-        XCTAssertEqual(dto.files?[2].sizeFormatted, "")
+        #expect(dto.files?.count == 3)
+        #expect(dto.files?[0].name == "README.md")
+        #expect(dto.files?[1].size == 4_500_000_000)
+        #expect(dto.files?[1].sizeFormatted == "4.2 GB")
+        #expect(dto.files?[2].sizeFormatted == "")
     }
 
-    func testDecodesTagsList() throws {
+    @Test("Decodes Tags List")
+    func decodesTagsList() throws {
         // Tags tab payload — flat array of strings. MS encodes them as
         // comma-separated server-side but converts before serializing,
         // so the wire shape is identical to HF.
         let json = #"{"model_card": "...", "tags": ["text-generation", "mlx", "license:apache-2.0"]}"#
             .data(using: .utf8)!
         let dto = try decoder.decode(ModelCardDTO.self, from: json)
-        XCTAssertEqual(dto.tags, ["text-generation", "mlx", "license:apache-2.0"])
+        #expect(dto.tags == ["text-generation", "mlx", "license:apache-2.0"])
     }
 
-    func testMissingFieldThrows() throws {
+    @Test("Missing Field Throws")
+    func missingFieldThrows() throws {
         // The contract requires `model_card` to be present, even if
         // empty. If the server ever omits the field, we want a decode
         // error surfaced as `.failed` in the sheet, not a silent empty
         // body that masks a server-side regression.
         let json = #"{"unrelated": "value"}"#.data(using: .utf8)!
 
-        XCTAssertThrowsError(try decoder.decode(ModelCardDTO.self, from: json))
+        #expect(throws: (any Error).self) {
+            try decoder.decode(ModelCardDTO.self, from: json)
+        }
     }
 }

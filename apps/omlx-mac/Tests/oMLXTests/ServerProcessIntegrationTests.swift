@@ -30,19 +30,16 @@
 //                test
 
 import Darwin
-import XCTest
+import Foundation
+import Testing
 @testable import oMLX
 
 @MainActor
-final class ServerProcessIntegrationTests: XCTestCase {
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["OMLX_INTEGRATION"] == "1"))
+struct ServerProcessIntegrationTests {
 
-    override func setUpWithError() throws {
-        guard ProcessInfo.processInfo.environment["OMLX_INTEGRATION"] == "1" else {
-            throw XCTSkip("Set OMLX_INTEGRATION=1 to run integration smoke tests.")
-        }
-    }
-
-    func testSpawnAndCleanShutdown() async throws {
+    @Test("Spawn And Clean Shutdown")
+    func spawnAndCleanShutdown() async throws {
         // The dev override pair must both be set — otherwise we'd need the
         // bundled venvstacks framework to satisfy `python -m omlx.cli`. Skip
         // with an actionable message rather than throw an opaque spawn
@@ -53,25 +50,22 @@ final class ServerProcessIntegrationTests: XCTestCase {
               let devScript = env["OMLX_DEV_SERVER_SCRIPT"], !devScript.isEmpty,
               FileManager.default.fileExists(atPath: devScript)
         else {
-            throw XCTSkip(
-                "Integration smoke test needs OMLX_PYTHON_OVERRIDE + " +
-                "OMLX_DEV_SERVER_SCRIPT set. See file header for the command."
+            try Test.cancel(
+                Comment(rawValue: "Integration smoke test needs OMLX_PYTHON_OVERRIDE + " +
+                    "OMLX_DEV_SERVER_SCRIPT set. See file header for the command.")
             )
         }
 
         let runtime = try PythonRuntime.resolve()
-        XCTAssertFalse(runtime.isBundled,
-                       "Smoke test should use the override interpreter, not the bundled one.")
+        #expect(!(runtime.isBundled), "Smoke test should use the override interpreter, not the bundled one.")
 
         let port = Self.findFreePort()
-        XCTAssertGreaterThan(port, 0, "Couldn't find a free port for the test.")
+        #expect(port > 0, "Couldn't find a free port for the test.")
 
         let tempBase = FileManager.default.temporaryDirectory
             .appendingPathComponent("oMLX-integ-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: tempBase, withIntermediateDirectories: true)
-        addTeardownBlock {
-            try? FileManager.default.removeItem(at: tempBase)
-        }
+        defer { try? FileManager.default.removeItem(at: tempBase) }
 
         let proc = ServerProcess(
             runtime: runtime,
@@ -86,28 +80,31 @@ final class ServerProcessIntegrationTests: XCTestCase {
         case .started, .alreadyRunning:
             break
         case .portConflict(let conflict):
-            XCTFail("Port \(port) reported in-use before spawn (isOMLX=\(conflict.isOMLX)).")
+            try #require(
+                Bool(false),
+                "Port \(port) reported in-use before spawn (isOMLX=\(conflict.isOMLX))."
+            )
             return
         }
-        XCTAssertNotNil(proc.pid, "Process should have a pid after start().")
+        #expect(proc.pid != nil, "Process should have a pid after start().")
 
-        // Give the child enough time to actually bind so the port-released
-        // check at the end is meaningful (otherwise we could fluke-pass by
-        // checking before bind).
-        try? await Task.sleep(for: .seconds(2))
+        // Wait until the child actually binds so the port-released check at
+        // the end is meaningful (otherwise we could fluke-pass by checking
+        // before bind).
+        _ = await Self.waitUntilPortInUse(port: port, timeout: .seconds(2))
 
         // Graceful stop — SIGTERM should bring the child down within
         // stopGraceSeconds. We pass a shorter timeout so a hung child
         // surfaces fast.
         await proc.stop(timeout: 5)
-        if case .stopped = proc.state {} else {
-            XCTFail("Server didn't transition to .stopped after stop(); state=\(proc.state)")
+        guard case .stopped = proc.state else {
+            try #require(Bool(false), "Server didn't transition to .stopped after stop(); state=\(proc.state)")
+            return
         }
 
         // The reaped child must release the port — otherwise SIGTERM didn't
         // actually take or the parent leaked the file descriptor.
-        XCTAssertFalse(Self.isPortInUse(port: port),
-                       "Port \(port) still bound after stop — orphaned child?")
+        #expect(!(Self.isPortInUse(port: port)), "Port \(port) still bound after stop — orphaned child?")
     }
 
     // MARK: - Helpers
@@ -142,6 +139,18 @@ final class ServerProcessIntegrationTests: XCTestCase {
         }
         guard got == 0 else { return 0 }
         return Int(UInt16(bigEndian: picked.sin_port))
+    }
+
+    private static func waitUntilPortInUse(port: Int, timeout: Duration) async -> Bool {
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+        while clock.now < deadline {
+            if isPortInUse(port: port) {
+                return true
+            }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        return isPortInUse(port: port)
     }
 
     /// Tiny connect-probe to verify the port is released after stop. Returns

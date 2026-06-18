@@ -1,9 +1,10 @@
-import XCTest
+import Testing
 @testable import oMLX
 
-final class ModelsScreenSortingTests: XCTestCase {
+struct ModelsScreenSortingTests {
 
-    func testSortModelsByNameIgnoresCase() {
+    @Test("Sort Models By Name Ignores Case")
+    func sortModelsByNameIgnoresCase() {
         let models = [
             makeModel("Qwen"),
             makeModel("gpt"),
@@ -13,10 +14,11 @@ final class ModelsScreenSortingTests: XCTestCase {
 
         let ids = sortModelsByName(models).map(\.id)
 
-        XCTAssertEqual(ids, ["gpt", "Llama", "mistral", "Qwen"])
+        #expect(ids == ["gpt", "Llama", "mistral", "Qwen"])
     }
 
-    func testSortModelsByNamePreservesInputOrderForCaseOnlyTies() {
+    @Test("Sort Models By Name Preserves Input Order For Case Only Ties")
+    func sortModelsByNamePreservesInputOrderForCaseOnlyTies() {
         let models = [
             makeModel("qwen"),
             makeModel("Qwen"),
@@ -25,7 +27,7 @@ final class ModelsScreenSortingTests: XCTestCase {
 
         let ids = sortModelsByName(models).map(\.id)
 
-        XCTAssertEqual(ids, ["qwen", "Qwen", "QWEN"])
+        #expect(ids == ["qwen", "Qwen", "QWEN"])
     }
 
     private func makeModel(_ id: String) -> ModelDTO {

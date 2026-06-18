@@ -12,6 +12,7 @@ enum ShellEnvWriter {
     nonisolated(unsafe) static var shellOverrideForTests: String?
     nonisolated(unsafe) static var publicBinDirsOverrideForTests: [URL]?
     nonisolated(unsafe) static var cliPathPrefsURLOverrideForTests: URL?
+    nonisolated(unsafe) static var pathOverrideForTests: String?
 
     enum CLISetupResult: Equatable {
         case publicCommandReady(path: String)
@@ -198,7 +199,7 @@ enum ShellEnvWriter {
 
         var seen = Set<String>()
         var dirs: [URL] = []
-        let pathParts = (getenv("PATH").map { String(cString: $0) } ?? "")
+        let pathParts = (pathOverrideForTests ?? getenv("PATH").map { String(cString: $0) } ?? "")
             .split(separator: ":")
             .map(String.init)
 
@@ -214,7 +215,7 @@ enum ShellEnvWriter {
     }
 
     private static func firstCLIPathInCurrentPath() -> URL? {
-        let current = getenv("PATH").map { String(cString: $0) } ?? ""
+        let current = pathOverrideForTests ?? getenv("PATH").map { String(cString: $0) } ?? ""
         for part in current.split(separator: ":").map(String.init) {
             let candidate = URL(fileURLWithPath: part, isDirectory: true)
                 .appendingPathComponent("omlx")
