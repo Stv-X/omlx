@@ -6,7 +6,7 @@ import SwiftUI
 import AppKit
 
 struct LogsScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = LogsScreenVM()
 
     var body: some View {

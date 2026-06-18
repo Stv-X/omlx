@@ -36,7 +36,7 @@ import AppKit
 import SwiftUI
 
 struct ThroughputBenchScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     // VM is owned by AppServices so a running bench survives screen
     // unloads — see AppServices.throughputBench for the rationale.
     @Bindable var vm: ThroughputBenchScreenVM

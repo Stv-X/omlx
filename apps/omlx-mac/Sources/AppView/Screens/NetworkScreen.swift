@@ -17,7 +17,7 @@
 import SwiftUI
 
 struct NetworkScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = NetworkScreenVM()
 
     var body: some View {

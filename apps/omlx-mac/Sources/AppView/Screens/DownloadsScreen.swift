@@ -29,7 +29,7 @@ enum DownloadSource: String, CaseIterable, Hashable, Sendable {
 }
 
 struct DownloadsScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = DownloadsScreenVM()
 
     var body: some View {

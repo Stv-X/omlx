@@ -35,7 +35,7 @@ import SwiftUI
 import AppKit
 
 struct AccuracyBenchScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     // VM is owned by AppServices so an in-flight queue (or in-progress
     // benchmark) survives screen unloads. Same rationale as
     // ThroughputBenchScreen — see AppServices.accuracyBench.

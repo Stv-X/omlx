@@ -8,6 +8,7 @@
 // second timer.
 
 import Foundation
+import Observation
 import Darwin.Mach
 
 /// Bucketed thermal levels. Decoupled from the SwiftUI `Color` so the
@@ -17,11 +18,13 @@ enum ThermalSeverity: String, Equatable, Sendable {
 }
 
 @MainActor
-final class SystemMetricsPoller: ObservableObject {
-    @Published var ramUsedBytes: UInt64?
-    @Published var ramTotalBytes: UInt64?
-    @Published var thermalState: ProcessInfo.ThermalState = .nominal
+@Observable
+final class SystemMetricsPoller {
+    var ramUsedBytes: UInt64?
+    var ramTotalBytes: UInt64?
+    var thermalState: ProcessInfo.ThermalState = .nominal
 
+    @ObservationIgnored
     private var pollTask: Task<Void, Never>?
 
     func start() {

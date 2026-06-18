@@ -22,7 +22,7 @@ import SwiftUI
 struct ModelSettingsScreen: View {
     let modelID: String
 
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = ModelSettingsScreenVM()
 
     var body: some View {
@@ -147,7 +147,7 @@ private struct ProfilesTab: View {
     /// from omlx.ai via `POST /api/presets/refresh`. Replaces the legacy
     /// `vm.templates.filter { isBuiltin }` source after Phase 1 retired
     /// the server-side builtin templates.
-    @ObservedObject var presetStore: PresetBundleStore
+    let presetStore: PresetBundleStore
     let client: OMLXClient
     /// Optional binding to a Server-Defaults DTO surfaced read-only at
     /// the bottom of the tab. Lives on the parent (a `@State`-

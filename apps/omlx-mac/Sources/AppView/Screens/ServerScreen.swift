@@ -11,7 +11,7 @@ import SwiftUI
 import AppKit
 
 struct ServerScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = ServerScreenVM()
 
     var body: some View {
@@ -285,7 +285,7 @@ private struct ModelDirectoriesEditor: View {
 struct ServerHeroCard: View {
     var vm: ServerScreenVM? = nil
 
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @Environment(\.omlxTheme) private var theme
 
     var body: some View {

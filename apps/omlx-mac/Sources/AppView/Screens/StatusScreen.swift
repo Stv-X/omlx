@@ -11,7 +11,7 @@
 import SwiftUI
 
 struct StatusScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = StatusScreenVM()
 
     @State private var showingClearStatsConfirm = false
@@ -476,7 +476,7 @@ private struct GpuMemoryTrailing: View {
 }
 
 private struct SystemRamTrailing: View {
-    @ObservedObject var metrics: SystemMetricsPoller
+    let metrics: SystemMetricsPoller
     @Environment(\.omlxTheme) private var theme
 
     var body: some View {
@@ -596,9 +596,9 @@ private struct ActiveNowList: View {
 // MARK: - Updates section
 
 private struct UpdatesSection: View {
-    // Observed directly so SwiftUI redraws on UpdateController's own
-    // @Published changes — nested ObservableObjects don't republish.
-    @ObservedObject var updates: UpdateController
+    // Reads UpdateController directly so SwiftUI redraws only for the
+    // observable update properties used by this section.
+    let updates: UpdateController
     @Environment(\.omlxTheme) private var theme
 
     var body: some View {

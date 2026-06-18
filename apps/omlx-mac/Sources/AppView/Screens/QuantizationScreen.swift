@@ -41,7 +41,7 @@ import SwiftUI
 import Security
 
 struct QuantizationScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = QuantizationScreenVM()
 
     var body: some View {

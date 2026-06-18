@@ -18,7 +18,7 @@ import SwiftUI
 import AppKit
 
 struct SecurityScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = SecurityScreenVM()
 
     var body: some View {

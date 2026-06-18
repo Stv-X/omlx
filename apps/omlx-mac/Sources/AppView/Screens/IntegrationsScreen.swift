@@ -15,7 +15,7 @@
 import SwiftUI
 
 struct IntegrationsScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = IntegrationsScreenVM()
 
     var body: some View {

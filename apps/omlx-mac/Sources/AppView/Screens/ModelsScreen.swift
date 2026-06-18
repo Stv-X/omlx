@@ -13,7 +13,7 @@
 import SwiftUI
 
 struct ModelsScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = ModelsScreenVM()
 
     var body: some View {

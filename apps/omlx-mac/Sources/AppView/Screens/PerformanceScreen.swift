@@ -18,7 +18,7 @@
 import SwiftUI
 
 struct PerformanceScreen: View {
-    @EnvironmentObject private var services: AppServices
+    @Environment(AppServices.self) private var services
     @State private var vm = PerformanceScreenVM()
 
     var body: some View {
