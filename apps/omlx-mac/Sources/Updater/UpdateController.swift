@@ -13,7 +13,6 @@
 
 import AppKit
 import Foundation
-import Observation
 
 enum UpdateChannel: String, Codable, CaseIterable, Identifiable, Sendable {
     case stable

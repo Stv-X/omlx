@@ -13,7 +13,6 @@
 // Swift and HTML.
 
 import Foundation
-import Observation
 import SwiftUI
 
 @MainActor

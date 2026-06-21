@@ -8,7 +8,6 @@
 // second timer.
 
 import Foundation
-import Observation
 import Darwin.Mach
 
 /// Bucketed thermal levels. Decoupled from the SwiftUI `Color` so the
