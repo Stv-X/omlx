@@ -401,7 +401,6 @@
 				6CC000000000000000000008 /* DownloadsScreen.swift */,
 				8CC000000000000000000004 /* ModelSettingsScreen.swift */,
 				8CC000000000000000000008 /* ProfileViews.swift */,
-				8CC000000000000000000009 /* ProfileWorkingState.swift */,
 				6CC000000000000000000009 /* IntegrationsScreen.swift */,
 				6CC00000000000000000000A /* SecurityScreen.swift */,
 				6CC00000000000000000000B /* AboutScreen.swift */,
@@ -459,9 +458,10 @@
 		AA81FB452FE29345001BF56E /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				9CC000000000000000000006 /* PresetBundleStore.swift */,
 				8CC000000000000000000005 /* ChatTemplateKwargs.swift */,
 				8CC000000000000000000006 /* DflashByteSize.swift */,
+				8CC000000000000000000009 /* ProfileWorkingState.swift */,
+				9CC000000000000000000006 /* PresetBundleStore.swift */,
 				8CC000000000000000000007 /* SystemMetricsPoller.swift */,
 			);
 			path = Utils;
