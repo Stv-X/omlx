@@ -978,6 +978,22 @@ final class ModelSettingsScreenVM {
         }
     }
 
+    /// Flip `expose_as_model` on a per-model profile via PUT. The body
+    /// carries only the flag (absent fields are merge-no-ops server-side);
+    /// reload picks up the derived `model_id` the profile serves under.
+    func setExposeAsModel(name: String, exposed: Bool, client: OMLXClient) async {
+        do {
+            _ = try await client.updateModelProfile(
+                id: modelID,
+                name: name,
+                body: UpdateProfileRequest(exposeAsModel: exposed)
+            )
+            await load(modelID: modelID, client: client)
+        } catch {
+            self.lastError = error.omlxDescription
+        }
+    }
+
     /// Apply a bundled preset entry to the model. Seeds a per-model
     /// profile (named after the preset, no `sourceTemplate` since presets
     /// aren't stored as server templates) and activates it. Mirrors
