@@ -142,7 +142,7 @@ private struct SectionPicker: View {
 // MARK: - Profiles tab
 
 private struct ProfilesTab: View {
-    @Bindable var vm: ModelSettingsScreenVM
+    var vm: ModelSettingsScreenVM
     /// Source of `.preset` chips — the shipped JSON bundle, refreshable
     /// from omlx.ai via `POST /api/presets/refresh`. Replaces the legacy
     /// `vm.templates.filter { isBuiltin }` source after Phase 1 retired
@@ -621,7 +621,7 @@ private struct BasicTab: View {
 /// the `named` (clean) state — no banner clutter when there's nothing to
 /// do.
 private struct BasicEditBanner: View {
-    @Bindable var vm: ModelSettingsScreenVM
+    var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @State private var saveAsScope: ProfileScope = .global
@@ -810,7 +810,7 @@ private struct AdvancedTab: View {
 // MARK: - Chat-template kwargs editor
 
 private struct ChatTemplateKwargsEditor: View {
-    @Bindable var vm: ModelSettingsScreenVM
+    var vm: ModelSettingsScreenVM
     let client: OMLXClient
 
     @Environment(\.omlxTheme) private var theme
@@ -881,7 +881,7 @@ private struct ChatTemplateKwargsEditor: View {
 }
 
 private struct EntryEditor: View {
-    @Bindable var vm: ModelSettingsScreenVM
+    var vm: ModelSettingsScreenVM
     let client: OMLXClient
     let entryID: UUID
 

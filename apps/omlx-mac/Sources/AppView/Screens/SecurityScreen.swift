@@ -42,7 +42,7 @@ struct SecurityScreen: View {
 // MARK: - API key section
 
 private struct APIKeySection: View {
-    @Bindable var vm: SecurityScreenVM
+    var vm: SecurityScreenVM
     let client: OMLXClient
 
     var body: some View {
@@ -62,7 +62,7 @@ private struct APIKeySection: View {
 }
 
 private struct APIKeyEditorRow: View {
-    @Bindable var vm: SecurityScreenVM
+    var vm: SecurityScreenVM
     let client: OMLXClient
 
     @State private var draft: String = ""
@@ -228,7 +228,7 @@ private struct AuthenticationSection: View {
 // MARK: - Sub keys
 
 private struct SubKeysSection: View {
-    @Bindable var vm: SecurityScreenVM
+    var vm: SecurityScreenVM
     let client: OMLXClient
 
     @State private var newName: String = ""

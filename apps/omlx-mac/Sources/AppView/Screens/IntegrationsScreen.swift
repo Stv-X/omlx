@@ -167,7 +167,7 @@ private struct ClaudeCodeSection: View {
 /// env-var recipe that points the real `claude` binary at the local server.
 /// Mirrors `claudeCodeCommand` in `omlx/admin/static/js/dashboard.js`.
 private struct ClaudeSetupCommandSection: View {
-    @Bindable var vm: IntegrationsScreenVM
+    var vm: IntegrationsScreenVM
     @State private var showAdvanced = false
     @Environment(\.omlxTheme) private var theme
 

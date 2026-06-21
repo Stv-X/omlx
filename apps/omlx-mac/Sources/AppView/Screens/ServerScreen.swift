@@ -198,7 +198,7 @@ struct ServerScreen: View {
 }
 
 private struct ModelDirectoriesEditor: View {
-    @Bindable var vm: ServerScreenVM
+    var vm: ServerScreenVM
     @Environment(\.omlxTheme) private var theme
 
     var body: some View {
