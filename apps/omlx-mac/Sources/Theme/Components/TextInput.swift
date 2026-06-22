@@ -32,7 +32,7 @@ struct TextInput: View {
     private var textAsDouble: Binding<Double> {
         Binding(
             get: { Double(text) ?? 0 },
-            set: { text = $0.formatted(.number.grouping(.never)) }
+            set: { text = $0.formatted(.number.grouping(.never).locale(Locale(identifier: "en_US_POSIX"))) }
         )
     }
 

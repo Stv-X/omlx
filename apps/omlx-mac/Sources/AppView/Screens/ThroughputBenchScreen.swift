@@ -216,6 +216,8 @@ private struct ConfigurationSection: View {
                     text: $genLength,
                     placeholder: "128",
                     mono: true,
+                    isNumeric: true,
+                    step: 1,
                     width: 110
                 )
             }

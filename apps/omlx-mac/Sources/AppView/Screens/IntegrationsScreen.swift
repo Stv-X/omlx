@@ -138,6 +138,8 @@ private struct ClaudeCodeSection: View {
                     TextInput(
                         text: $vm.targetContextSizeText,
                         mono: true,
+                        isNumeric: true,
+                        step: 1,
                         suffix: "tk",
                         width: 130
                     )

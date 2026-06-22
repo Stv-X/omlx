@@ -76,7 +76,7 @@ private struct SchedulerSection: View {
                                  defaultValue: "Cap on simultaneous /v1 requests.",
                                  comment: "Sublabel for max concurrent requests")
             ) {
-                TextInput(text: $vm.maxConcurrentText, mono: true, width: 90)
+                TextInput(text: $vm.maxConcurrentText, mono: true, isNumeric: true, range: 1...1024, step: 1, width: 90)
             }
             Row(
                 label: String(localized: "performance.scheduler.embedding_batch_size",
@@ -86,7 +86,7 @@ private struct SchedulerSection: View {
                                  defaultValue: "Max input texts per embedding forward pass.",
                                  comment: "Sublabel for embedding batch size")
             ) {
-                TextInput(text: $vm.embeddingBatchSizeText, mono: true, width: 90)
+                TextInput(text: $vm.embeddingBatchSizeText, mono: true, isNumeric: true, range: 1...8192, step: 1, width: 90)
             }
             Row(
                 label: String(localized: "performance.scheduler.chunked_prefill",

@@ -566,7 +566,7 @@ private struct WelcomeSetupBody: View {
                                          defaultValue: "Default 8000. Change this only if the port is already in use.",
                                          comment: "Sublabel for the port field with the recommended default")
                     ) {
-                        TextInput(text: $vm.portText, mono: true, width: 96)
+                        TextInput(text: $vm.portText, mono: true, isNumeric: true, range: 1...65535, step: 1, width: 96)
                     }
 
                     WelcomeDivider()

@@ -50,7 +50,7 @@ struct ServerScreen: View {
                                      comment: "Sublabel under the Port field"),
                     isLast: true
                 ) {
-                    TextInput(text: $vm.portText, mono: true, width: 90)
+                    TextInput(text: $vm.portText, mono: true, isNumeric: true, range: 1...65535, step: 1, width: 90)
                 }
             }
 
@@ -458,7 +458,7 @@ private struct ServerDefaultProfileEditor: View {
                     sublabel: String(localized: "server.profile.context_window.sub",
                                      defaultValue: "Maximum prompt + completion tokens.",
                                      comment: "Sublabel for the context window field")) {
-                    TextInput(text: $vm.samplingContextText, mono: true, suffix: "tk", width: 110)
+                    TextInput(text: $vm.samplingContextText, mono: true, isNumeric: true, step: 1, suffix: "tk", width: 110)
                 }
                 Row(label: String(localized: "server.profile.max_tokens",
                                   defaultValue: "Max Tokens",
@@ -466,7 +466,7 @@ private struct ServerDefaultProfileEditor: View {
                     sublabel: String(localized: "server.profile.max_tokens.sub",
                                      defaultValue: "Server-wide cap on generated tokens.",
                                      comment: "Sublabel for the max tokens field")) {
-                    TextInput(text: $vm.samplingMaxTokensText, mono: true, suffix: "tk", width: 110)
+                    TextInput(text: $vm.samplingMaxTokensText, mono: true, isNumeric: true, step: 1, suffix: "tk", width: 110)
                 }
                 Row(label: String(localized: "server.profile.temperature",
                                   defaultValue: "Temperature",
@@ -474,7 +474,7 @@ private struct ServerDefaultProfileEditor: View {
                     sublabel: String(localized: "server.profile.temperature.sub",
                                      defaultValue: "Sampling randomness (0–2).",
                                      comment: "Sublabel for the temperature field")) {
-                    TextInput(text: $vm.samplingTemperatureText, placeholder: "0.7", mono: true, width: 90)
+                    TextInput(text: $vm.samplingTemperatureText, placeholder: "0.7", mono: true, isNumeric: true, range: 0...2, step: 0.1, width: 90)
                 }
                 Row(label: String(localized: "server.profile.top_p",
                                   defaultValue: "Top P",
@@ -482,7 +482,7 @@ private struct ServerDefaultProfileEditor: View {
                     sublabel: String(localized: "server.profile.top_p.sub",
                                      defaultValue: "Nucleus sampling cutoff (0–1).",
                                      comment: "Sublabel for the Top P field")) {
-                    TextInput(text: $vm.samplingTopPText, mono: true, width: 90)
+                    TextInput(text: $vm.samplingTopPText, mono: true, isNumeric: true, range: 0...1, step: 0.05, width: 90)
                 }
                 Row(label: String(localized: "server.profile.top_k",
                                   defaultValue: "Top K",
@@ -490,7 +490,7 @@ private struct ServerDefaultProfileEditor: View {
                     sublabel: String(localized: "server.profile.top_k.sub",
                                      defaultValue: "Limit candidates to top K. 0 = disabled.",
                                      comment: "Sublabel for the Top K field")) {
-                    TextInput(text: $vm.samplingTopKText, mono: true, width: 90)
+                    TextInput(text: $vm.samplingTopKText, mono: true, isNumeric: true, range: 0...1000, step: 1, width: 90)
                 }
                 Row(label: String(localized: "server.profile.repetition_penalty",
                                   defaultValue: "Repetition Penalty",
@@ -500,7 +500,7 @@ private struct ServerDefaultProfileEditor: View {
                                      comment: "Sublabel for the repetition penalty field"),
                     isLast: !expanded
                 ) {
-                    TextInput(text: $vm.samplingRepetitionPenaltyText, mono: true, width: 90)
+                    TextInput(text: $vm.samplingRepetitionPenaltyText, mono: true, isNumeric: true, range: 0...2, step: 0.05, width: 90)
                 }
                 if expanded {
                     // The remaining design rows aren't server-backed yet —
